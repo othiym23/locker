@@ -417,20 +417,14 @@ function proxied(method, svc, ppath, req, res, buffer) {
     });
 }
 
-function ensureDashboard(callback) {
-    if(serviceManager.metaInfo(lconfig.ui)) {
-        process.nextTick(callback);
-    } else {
-        serviceManager.install(lconfig.ui, callback);
-    }
-}
 
 exports.startService = function(port) {
-    ensureDashboard(function() {
-        serviceManager.spawn(lconfig.ui, function() {
-            dashboard= {instance: serviceManager.metaInfo(lconfig.ui)};
-            console.log('ui spawned');
-        });
+    // console.error('avail:' + JSON.stringify(serviceManager.serviceMap().available));
+    if(!serviceManager.isInstalled(lconfig.ui))
+        serviceManager.install(serviceManager.getFromAvailable(lconfig.ui));
+    serviceManager.spawn(lconfig.ui, function() {
+        dashboard = {instance: serviceManager.metaInfo(lconfig.ui)};
+        console.log('ui spawned');
     });
     locker.listen(port);
 }

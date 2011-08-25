@@ -396,6 +396,15 @@ exports.metaInfo = function(serviceId) {
     return serviceMap.installed[serviceId];
 }
 
+exports.getFromAvailable = function(handle) {
+    for(var i in serviceMap.available) {
+        console.error('DEBUG: serviceMap.available[i]' + JSON.stringify(serviceMap.available[i]));
+        if(serviceMap.available[i].handle === handle)
+            return serviceMap.available[i];
+    }
+    return null;
+}
+
 exports.isInstalled = function(serviceId) {
     if (serviceMap.disabled.indexOf(serviceId) > -1) {
         return false;
