@@ -279,7 +279,7 @@ window.onpopstate = function(event) {
 
 function updateServiceMap(previousLocation, callback) {
     // Update Interface from Service Map
-    $.ajax({ url: "map", dataType: "json" }).success(
+    $.ajax({ url: "/map", dataType: "json" }).success(
         function(data) {
             var installedSrcDirs = [];
             window.serviceMap = data;
