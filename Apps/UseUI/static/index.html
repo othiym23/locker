@@ -4,14 +4,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"> 
   <title>the locker project</title>
   <link rel="stylesheet" href="http://code.jquery.com/mobile/1.0b2/jquery.mobile-1.0b2.min.css" />
-  <link rel="stylesheet" href="/newsetup/style.css" /> 
+  <link rel="stylesheet" href="style.css" /> 
   <script src="http://code.jquery.com/jquery-1.6.2.min.js"></script> 
   <script src="http://code.jquery.com/mobile/1.0b2/jquery.mobile-1.0b2.min.js"></script> 
 </head>
 
 <body>
+
+
+<!-- Start of first page: #one --> 
+<div data-role="page" id="enter">
   <div data-role="header">
-    <h1>Welcome!</h1>
+    <div>
+      <span class="headerTitle">Welcome!</span>
+    </div>
   </div>
   <section id="main">
     <div class="title">Your locker collects your data and lets you experience it...</div>
@@ -19,22 +25,22 @@
       <div class="header">Start collecting your data with these apps:</div>
       <div class="ui-grid-b">
         <div class="ui-block-a">
-          <div class="box">
-            <img src="/newsetup/img/contacts.png">
+          <div class="box" id="contacts">
+            <img src="img/contacts.png">
             <p>Your Contacts</p>
           </div>
           <p class="undertext">Create a merged contacts list</p>
         </div>
         <div class="ui-block-b">
-          <div class="box">
-            <img src="/newsetup/img/photos.png">
+          <div class="box" id="photos">
+            <img src="img/photos.png">
             <p>Your Photos</p>
           </div>
           <p class="undertext">See your photos in one place</p>
         </div>
         <div class="ui-block-c">
-          <div class="box">
-            <img src="/newsetup/img/links.png">
+          <div class="box" id="links">
+            <img src="img/links.png">
             <p>Your Links</p>
           </div>
           <p class="undertext">Experience your entire clickstream</p>
@@ -42,6 +48,8 @@
       </div>
     </div>
   </section>
-  <script type="text/javascript" src="/newsetup/client.js"></script>
-</body> 
-</html> 
+</div>
+
+<script type="text/javascript" src="client.js"></script>
+</body>
+</html>
