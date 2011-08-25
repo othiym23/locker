@@ -389,6 +389,8 @@ locker.post('/core/:svcId/event', function(req, res) {
     res.end("OKTHXBI");
 });
 
+// console.error(__dirname + '/static');
+// locker.use(express.static(__dirname + '/static'));
 
 // fallback everything to the dashboard
 locker.get('/*', function(req, res) {
