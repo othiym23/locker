@@ -21,6 +21,8 @@ var fs = require('fs'),
     request = require('request');
     
 
+var map;
+
 var rootHost;
 var lockerPort;
 var rootPort;

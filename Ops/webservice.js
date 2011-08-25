@@ -15,7 +15,7 @@ var levents = require("levents");
 var lutil = require('lutil');
 var serviceManager = require("lservicemanager");
 var syncManager = require('lsyncmanager');
-var dashboard = require(__dirname + "/dashboard.js");
+// var dashboard = require(__dirname + "/dashboard.js");
 var express = require('express');
 var connect = require('connect');
 var request = require('request');
@@ -32,6 +32,8 @@ var lcrypto = require("lcrypto");
 
 var proxy = new httpProxy.HttpProxy();
 var scheduler = lscheduler.masterScheduler;
+
+var dashboard;
 
 var locker = express.createServer(
             // we only use bodyParser to create .params for callbacks from services, connect should have a better way to do this
@@ -414,5 +416,9 @@ function proxied(method, svc, ppath, req, res, buffer) {
 }
 
 exports.startService = function(port) {
+    serviceManager.spawn(lconfig.ui, function() {
+        dashboard= {instance: serviceManager.metaInfo(lconfig.ui)};
+        console.log('ui spawned');
+    });
     locker.listen(port);
 }
