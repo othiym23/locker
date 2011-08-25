@@ -6,17 +6,25 @@ body {
 .ui-header {
     border: 0;
     background: #6e6e6e;
+    height: 45px;
 }
 
-.ui-header .ui-title {
+.ui-header .headerTitle {
+    line-height: 45px;
+    margin-left: 100px;
     font-weight: bold;
     text-align: left;
-    text-shadow: 0 0px 0px;
+    text-shadow: none;
     font-size: 1.2em;
 }
 
-.ui-body-a,.ui-body-b,.ui-body-c {
+.ui-body-a,.ui-body-b,.ui-body-c, .ui-bar-a {
+    text-shadow: none;
     font-family: arial, helvetica, sans-serif;
+}
+
+.ui-header .ui-btn {
+    margin-top: 3px;
 }
 
 #main {
@@ -73,4 +81,11 @@ body {
     font-size: 12.25px;
     margin: 10px 20px 20px 20px;
     letter-spacing: .5px;
+}
+
+#app .servicesBox {
+    float: right;
+    margin-right: 50px;
+    background-color: #67abdc;
+    margin-top: 30px;
 }
