@@ -11,6 +11,12 @@ var express = require('express'),
     connect = require('connect');
     
 var app = express.createServer();
+
+app.get('/ready', function(req, res) {
+    res.writeHead(200);
+    res.end('true');
+});
+
 app.use(express.static(__dirname + '/static'));
 
 
