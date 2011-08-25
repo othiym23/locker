@@ -156,7 +156,7 @@ function showDetails(index, section) {
 }
 
 function installService(i) {
-    $.getJSON("/install", {id:i},
+    $.getJSON("install", {id:i},
               function(data, err, resp) {
                   if(data && data.success) {
                       var svc = data.success;

@@ -21,6 +21,8 @@ var fs = require('fs'),
     request = require('request');
     
 
+var map;
+
 var rootHost;
 var lockerPort;
 var rootPort;
@@ -52,11 +54,11 @@ app.get('/', function (req, res) {
     request.get({uri:lockerRoot + '/synclets'}, function(err, resp, body) {
         synclets = JSON.parse(body);
         var connectorCount = 0; // should replace with collection count
-        // var path = __dirname + "/wizard/index.html";
+        var path = __dirname + "/wizard/index.html";
                    
-        // for (app in synclets.installed) {
+        for (app in synclets.installed) {
             path = __dirname + "/dashboard.html";
-        // }
+        }
         
         console.error('DEBUG: path', path);
         fs.readFile(path, function(err, data) {
