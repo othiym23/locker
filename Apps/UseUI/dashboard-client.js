@@ -34,12 +34,11 @@ module.exports = function(passedLockerHost, passedLockerPort, passedPort, passed
     rootHost = passedLockerHost;
     lockerPort = passedLockerPort;
     rootPort = passedPort;
-    console.error('DEBUG: rootPort', rootPort);
     externalBase = passedExternalBase;
     lockerBase = 'http://' + rootHost + ':' + lockerPort + '/core/dashboard';
     lockerRoot = 'http://'+rootHost+':'+lockerPort;
     
-    app.use(express.static(__dirname));
+    app.use(express.static(__dirname + '/static'));
 
     app.listen(rootPort);
 }
