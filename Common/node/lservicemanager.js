@@ -91,7 +91,17 @@ function mapMetaData(file, type, installable) {
             }
         }
     }
-
+    if(metaData.autoInstall) {
+        var err = false;
+        try {
+            var stat = fs.statSync(lconfig.lockerDir+"/" + lconfig.me + "/"+metaData.handle);
+        } catch (E) {
+            err = true
+        }    
+        if(err || !stat) {
+            exports.install(metaData);
+        }
+    }
     return metaData;
 }
     

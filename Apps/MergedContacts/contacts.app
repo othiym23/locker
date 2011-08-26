@@ -5,5 +5,6 @@
     "status":"stable",
     "handle":"contactsviewer",
     "uses":["facebook", "twitter", "foursquare", "gcontacts", "github"],
+    "autoInstall":true,
     "run":"node contacts.js"
 }
