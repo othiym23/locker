@@ -24,9 +24,9 @@ $(document).ready(
 
         $('#service-closer').click(function() {
             userClosed = true;
-            $('#services').animate({height: "0px"}, function() {
+            $('#appFrame').animate({height: $('#appFrame').height() + 110}, {queue: false});
+            $('#services').animate({height: "0px"}, {queue: false}, function() {
                 $('.services-box').show();
-                resizeFrame();
             });
         });
         
@@ -39,6 +39,7 @@ $(document).ready(
         renderApp();
         
         $(window).resize(resizeFrame);
+        resizeFrame();
     }
 );
 
@@ -212,9 +213,10 @@ function renderApp() {
 function expandServices() {
     $('.services-box').hide();
     drawServices();
-    $('#services').animate({height: "110px"}, function() {
-        resizeFrame();
-    });
+    $('#appFrame').animate({height: $('#appFrame').height() - 110}, {queue: false});
+    $('#services').animate({height: "110px"}, function() {});
+    //     resizeFrame();
+    // });
 }
 
 function resizeFrame() {
