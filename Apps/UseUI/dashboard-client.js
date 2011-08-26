@@ -48,7 +48,7 @@ app.use(connect.bodyParser());
 
 app.get('/apps', function(req, res) {
     res.writeHead(200, {'Content-Type': 'application/json'});
-    res.end(JSON.stringify({contacts: lockerRoot + '/Me/contactsviewer'}));
+    res.end(JSON.stringify({contacts: {url : lockerRoot + '/Me/contactsviewer/', id : 'contactsviewer'}}));
 });
 
 app.get('/config.js', function (req, res) {
