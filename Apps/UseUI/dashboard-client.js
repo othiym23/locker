@@ -43,45 +43,12 @@ module.exports = function(passedLockerHost, passedLockerPort, passedPort, passed
     app.listen(rootPort);
 }
 
-
 var app = express.createServer();
 app.use(connect.bodyParser());
-
-var synclets;
-app.get('/', function (req, res) {
-    res.writeHead(200, { 'Content-Type': 'text/html','Access-Control-Allow-Origin' : '*' });
-    request.get({uri:lockerRoot + '/synclets'}, function(err, resp, body) {
-        synclets = JSON.parse(body);
-        var connectorCount = 0; // should replace with collection count
-        var path = __dirname + "/wizard/index.html";
-                   
-        for (app in synclets.installed) {
-            path = __dirname + "/dashboard.html";
-        }
-        
-        console.error('DEBUG: path', path);
-        fs.readFile(path, function(err, data) {
-            res.write(data, "binary");
-            res.end();
-        });
-    });
-});
 
 app.get('/apps', function(req, res) {
     res.writeHead(200, {'Content-Type': 'application/json'});
     res.end(JSON.stringify({contacts: lockerRoot + '/Me/contactsviewer'}));
-});
-
-app.get('/dashboard', function (req, res) {
-    res.writeHead(200, { 'Content-Type': 'text/html','Access-Control-Allow-Origin' : '*' });
-    request.get({uri:lockerRoot + '/map'}, function(err, resp, body) {
-        map = JSON.parse(body);
-        var path = "dashboard.html";
-        fs.readFile(path, function(err, data) {
-            res.write(data, "binary");
-            res.end();
-        });
-    });
 });
 
 app.get('/config.js', function (req, res) {
@@ -102,76 +69,6 @@ function intersect(a,b) {
             if(a[i] == b[j]) return a[i];
     return false;
 }
-
-app.get('/install', function(req, res){
-    ensureMap(function() {
-        install(req, res);
-    });
-});
-
-function install(req, res) {
-    var id = req.param('id');
-    var handle = req.param('handle');
-    console.log(id);
-    console.log(handle);
-    var httpClient = http.createClient(lockerPort);
-    var request = httpClient.request('POST', '/core/Dashboard/install', {'Content-Type':'application/json'});
-    console.log("hi");
-    if (id) var item = JSON.stringify(map.available[req.param('id')]);
-    for (i in map.available) {
-        if (map.available[i].handle == handle) {
-            if (handle) var item = JSON.stringify(map.available[i]);
-        }
-    }
-    console.log(item);
-    request.write(item);
-    request.end();
-    request.on('response',
-    function(response) {
-        var data = '';
-        response.on('data', function(chunk) {
-            data += chunk;
-        });
-        response.on('end', function() {
-            j = JSON.parse(data);
-            if(j && j.id) {
-                res.writeHead(200, { 'Content-Type': 'application/json','Access-Control-Allow-Origin' : '*'});
-                res.end(JSON.stringify({success:j}));
-            } else {
-                res.writeHead(200, { 'Content-Type': 'application/json','Access-Control-Allow-Origin' : '*'});
-                res.end(JSON.stringify({error:j}));
-            }
-        });
-    });
-}
-
-app.get('/uninstall', function(req, res) {
-    stopService('uninstall', req, res);
-});
-
-app.get('/enable', function(req, res){
-    stopService('enable', req, res);
-});
-
-
-app.get('/disable', function(req, res){
-    stopService('disable', req, res);
-});
-
-function stopService(method, req, res) {
-    var serviceId = req.query.serviceId;
-    request.post({uri:lockerBase + '/' + method, json:{serviceId:serviceId}}, function(err, resp, body) {
-        if(err) {
-            res.writeHead(500, {'Content-Type': 'application/json'});
-            console.error(method + ' err', err);
-            res.end(JSON.stringify({error:true}));
-        } else {
-            res.writeHead(200, {'Content-Type': 'application/json'});
-            res.end(JSON.stringify({success:true}));
-        }
-    });
-}
-
 function ensureMap(callback) {
     if (!map || !map.available) {
         request.get({uri:lockerRoot + '/map'}, function(err, resp, body) {
