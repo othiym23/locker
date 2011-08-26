@@ -67,9 +67,9 @@ app.get('/', function (req, res) {
     });
 });
 
-app.get('/handles', function(req, res) {
+app.get('/apps', function(req, res) {
     res.writeHead(200, {'Content-Type': 'application/json'});
-    res.end(JSON.stringify({contacts:'contactsviewer'}));
+    res.end(JSON.stringify({contacts: lockerRoot + '/Me/contactsviewer'}));
 });
 
 app.get('/dashboard', function (req, res) {
