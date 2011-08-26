@@ -25,10 +25,9 @@ $(document).ready(
 
         $('#service-closer').click(function() {
             userClosed = true;
+            $('.services-box').show();
             $('#appFrame').animate({height: $('#appFrame').height() + 110}, {queue: false});
-            $('#services').animate({height: "0px"}, {queue: false}, function() {
-                $('.services-box').show();
-            });
+            $('#services').animate({height: "0px"}, {queue: false});
         });
         
         $('#service-selector').delegate('.provider-link', 'click', function() {
