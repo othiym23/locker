@@ -18,9 +18,7 @@ $(document).ready(
         });
 
         $('.services-box').click(function() {
-            $('#services').animate({height: "110px"}, function() {
-                $('.services-box').hide();
-            });
+            expandServices();
         });
 
         $('#service-closer').click(function() {
@@ -185,7 +183,6 @@ function renderApp() {
         var ready = false;
         if (!data[app]) return;
         appId = data[app].id;
-        drawServices();
         (function poll (data) {
             $.getJSON(data[app].url + "ready", function(state) {
                 ready = state;
@@ -195,6 +192,7 @@ function renderApp() {
                     clearTimeout(timeout);
                 }
                 else {
+                    expandServices();
                     if (!timeout) {
                         log('loading page');
                         $("#appFrame")[0].contentWindow.location.replace(data[app].url + "notready.html");
@@ -206,3 +204,10 @@ function renderApp() {
         })(data);
     });
 };
+
+function expandServices() {
+    drawServices();
+    $('#services').animate({height: "110px"}, function() {
+        $('.services-box').hide();
+    });
+}
