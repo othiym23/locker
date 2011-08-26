@@ -1,5 +1,6 @@
 function log(m) { if (console && console.log) console.log(m); }
 var app, timeout, appId;
+var providers = [];
 
 $(document).ready(
     function() {
@@ -27,6 +28,12 @@ $(document).ready(
                 $('.services-box').show();
             });
         });
+        
+        $('#service-selector').delegate('.provider-link', 'click', function() {
+            if ($(this).hasClass('disabled')) return false;
+            accountPopup($(this).attr('href'));
+            return false;
+        });
 
         renderApp();
     }
@@ -37,10 +44,19 @@ $(document).ready(
  */
 var SyncletPoll = (
     function () {
+        var spinnerOpts = {
+            lines: 12,
+            length: 5,
+            width: 3,
+            radius: 8,
+            trail: 60,
+            speed: 1.0,
+            shadow: false
+        };
+        
         var SyncletPoll = function () {
             var t = this;
             t.uri = "/synclets";
-            t.buttonsConnected = false;
             t.installed = {};
 
             var app = {};
@@ -49,72 +65,41 @@ var SyncletPoll = (
                 var b =  {
                     "lastState": "",
                     "state": state,
-                    "$el": $("#"+provider+"Connect a:first")
+                    "$el": $("#"+provider+"connect")
                 };
 
                 // use the existing object if it exists
                 if (typeof(t.installed[provider]) != "undefined") {
+                    b.$el.find('a').addClass("disabled");
                     b = t.installed[provider];
                     b.state = state;
                 }
 
-                if (b.lastState == b.state) {
-                    return;
-                }
+                if (b.lastState == b.state) return;
 
                 log("["+provider+"] " + state);
 
                 if (b.state == "running" || b.state == "processing data") {
-
-                    b.$el.addClass("pending disabled");
-
-                    if ($("#wizard-collections:visible").length == 0) {
-                        $("#wizard-collections").slideDown();
-                        $("#wizard-actions").fadeIn();
-                        $("#popup h2").html(_s[1].action).next().html(_s[1].desc);
-                    }
-                    b.$el.parent().parent().children(".spinner").html("").fadeIn();
                     if (typeof(b.spinner) == "undefined") {
-                        b.spinner = spinner(b.$el.parent().parent().children(".spinner").get(0), 15, 20, 20, 4, "#aaa");
+                        var target = b.$el.find(".spinner")[0];
+                        b.spinner = new Spinner(spinnerOpts).spin(target);
+                    } else {
+                        b.spinner.spin();
                     }
                 } else if (b.state == "waiting") {
-                    b.$el.removeClass("pending");
-                    b.$el.parent().parent().children(".spinner").html("&#x2713;").fadeIn();
-                    delete b.spinner;
+                    if (b.spinner) b.spinner.stop();
+                    b.$el.find('.checkmark').show();
                 }
 
                 b.lastState = b.state;
                 t.installed[provider] = b;
-
             };
 
             t.handleResponse = function(data, err, resp) {
-                var wizardApps = ["facebook", "twitter", "gcontacts", "github", "foursquare"];
-                if (!t.buttonsConnected) {
-                    var authTokensExist = false;
-                    for (app in data.available) {
-                        app = data.available[app];
-
-                        if (wizardApps.indexOf(app.provider) != -1 && typeof(app.authurl) != "undefined") {
-                            // update app button with the correct link
-                            var $el = $("#"+ app.provider + "Connect a:first");
-                            // change link
-                            $el.attr("href", app.authurl);
-                            $el.attr("target", "_blank");
-                            authTokensExist = true;
-                        }
-                    }
-                    t.buttonsConnected = true;
-                    if (!authTokensExist) {
-                        // bail out if synclets have no authtokens
-                        $.mobile.changePage("#noApiKeys");
-                    }
-                }
-
                 for (app in data.installed) {
                     app = data.installed[app];
 
-                    if (wizardApps.indexOf(app.provider) != -1) {
+                    if (providers.indexOf(app.provider) != -1) {
                         // update app button with "pending" gfx
                         t.updateState(app.provider, app.status);
                     }
@@ -153,24 +138,34 @@ var SyncletPoll = (
 function drawServices() {
     $.getJSON('/available?handle=' + appId, function(data) {
         $.getJSON('/synclets', function(synclets) {
+            $('.service:not(.template)').remove();
+            providers = [];
             for (var i in data.uses) {
                 for (var j = 0; j < synclets.available.length; j++) {
                     if (synclets.available[j].provider === data.uses[i]) {
-                        drawService(synclets.available[i]);
+                        providers.push(data.uses[i]);
+                        drawService(synclets.available[j]);
                     }
                 }
             }
+            window.syncletPoll = new SyncletPoll(providers);
         });
     });
-    window.syncletPoll = new SyncletPoll();
 }
 
 function drawService(synclet) {
     log(synclet);
+    var newService = $('.service.template').clone();
+    newService.find('.provider-icon').attr('src', 'img/icons/' + synclet.provider + '.png');
+    newService.find('.provider-link').attr('href', synclet.authurl);
+    newService.find('.provider-name').text(synclet.provider);
+    newService.removeClass('template');
+    newService.attr('id', synclet.provider + 'connect');
+    $('#service-selector').append(newService);
 };
 
 // this needs some cleanup to actually use the proper height + widths
-function accountPopup (url, provider) {
+function accountPopup (url) {
     var oauthPopupSizes = {foursquare: {height: 540,  width: 960},
                  github: {height: 1000, width: 1000},
                  twitter: {width: 980, height: 750}
