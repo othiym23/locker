@@ -82,6 +82,7 @@ var SyncletPoll = (
                 if (b.state == "running" || b.state == "processing data") {
                     if (typeof(b.spinner) == "undefined") {
                         var target = b.$el.find(".spinner")[0];
+                        b.$el.find('a').addClass("disabled");
                         b.spinner = new Spinner(spinnerOpts).spin(target);
                     } else {
                         b.spinner.spin();
