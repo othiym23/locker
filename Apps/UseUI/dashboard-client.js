@@ -67,6 +67,11 @@ app.get('/', function (req, res) {
     });
 });
 
+app.get('/handles', function(req, res) {
+    res.writeHead(200, {'Content-Type': 'application/json'});
+    res.end(JSON.stringify({contacts:'contactsviewer'}));
+});
+
 app.get('/dashboard', function (req, res) {
     res.writeHead(200, { 'Content-Type': 'text/html','Access-Control-Allow-Origin' : '*' });
     request.get({uri:lockerRoot + '/map'}, function(err, resp, body) {

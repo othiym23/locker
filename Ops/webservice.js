@@ -83,6 +83,25 @@ locker.get("/providers", function(req, res) {
     res.end(JSON.stringify(services));
 });
 
+locker.get("/available", function(req, res) {
+    var handle = req.param('handle');
+    if(!handle) {
+        res.writeHead(400);
+        res.end(JSON.stringify({error:'requires handle param'}));
+        return;
+    } else {
+        var service = serviceManager.getFromAvailable(handle);
+        if(!service) {
+            res.writeHead(400);
+            res.end(JSON.stringify({error:'handle ' + handle + ' not found'}));
+            return;
+        } else {
+            res.writeHead(200, {"Content-Type":"application/json"});
+            res.end(JSON.stringify(service));
+        }
+    }
+})
+
 locker.get("/encrypt", function(req, res) {
     if (!req.param("s")) {
         res.writeHead(400);
