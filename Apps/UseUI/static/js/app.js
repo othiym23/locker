@@ -1,6 +1,7 @@
 function log(m) { if (console && console.log) console.log(m); }
 var app, timeout, appId;
 var providers = [];
+var userClosed = false;
 
 $(document).ready(
     function() {
@@ -22,8 +23,10 @@ $(document).ready(
         });
 
         $('#service-closer').click(function() {
+            userClosed = true;
             $('#services').animate({height: "0px"}, function() {
                 $('.services-box').show();
+                resizeFrame();
             });
         });
         
@@ -34,6 +37,8 @@ $(document).ready(
         });
 
         renderApp();
+        
+        $(window).resize(resizeFrame);
     }
 );
 
@@ -75,14 +80,14 @@ var SyncletPoll = (
 
                 if (b.lastState == b.state) return;
 
-                log("["+provider+"] " + state);
+                // log("["+provider+"] " + state);
 
                 if (b.state == "running" || b.state == "processing data") {
                     if (typeof(b.spinner) == "undefined") {
                         var target = b.$el.find(".spinner")[0];
                         b.$el.find('a').addClass("disabled");
                         b.spinner = new Spinner(spinnerOpts).spin(target);
-                    } else {
+                    } else if (!(b.find('.checkmark').is(':visible'))) {
                         b.spinner.spin();
                     }
                 } else if (b.state == "waiting") {
@@ -153,7 +158,6 @@ function drawServices() {
 }
 
 function drawService(synclet) {
-    log(synclet);
     var newService = $('.service.template').clone();
     newService.find('.provider-icon').attr('src', 'img/icons/' + synclet.provider + '.png');
     newService.find('.provider-link').attr('href', synclet.authurl);
@@ -187,18 +191,18 @@ function renderApp() {
             $.getJSON(data[app].url + "ready", function(state) {
                 ready = state;
                 if (ready) {
-                    log('clearing timeout');
+                    // log('clearing timeout');
                     $("#appFrame")[0].contentWindow.location.replace(data[app].url);
                     clearTimeout(timeout);
                 }
                 else {
-                    expandServices();
+                    if (!userClosed && $('#services').height() === 0) expandServices();
                     if (!timeout) {
-                        log('loading page');
+                        // log('loading page');
                         $("#appFrame")[0].contentWindow.location.replace(data[app].url + "notready.html");
                     }
                     timeout = setTimeout(function() {poll(data)}, 1000);
-                    log(timeout);
+                    // log(timeout);
                 }
             });
         })(data);
@@ -206,8 +210,13 @@ function renderApp() {
 };
 
 function expandServices() {
+    $('.services-box').hide();
     drawServices();
     $('#services').animate({height: "110px"}, function() {
-        $('.services-box').hide();
+        resizeFrame();
     });
+}
+
+function resizeFrame() {
+    $('#appFrame').height($(window).height() - $('#services').height() - $('.header').height() - 6);
 }
