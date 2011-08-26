@@ -14,6 +14,7 @@ $(document).ready(
 
         $('.app-link').click(function() {
             app = $(this).attr('id');
+            window.location.hash = app;
             renderApp();
             return false;
         });
@@ -215,8 +216,6 @@ function expandServices() {
     drawServices();
     $('#appFrame').animate({height: $('#appFrame').height() - 110}, {queue: false});
     $('#services').animate({height: "110px"}, function() {});
-    //     resizeFrame();
-    // });
 }
 
 function resizeFrame() {
