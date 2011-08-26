@@ -87,6 +87,9 @@ vows.describe("Service Manager").addBatch({
             "found at least 10 services": function() {
                 assert.ok(serviceManager.serviceMap().available.length > 10);
             },
+            "can be looked up by handle from the available sections of the service map": function() {
+                assert.equal(serviceManager.getFromAvailable("facebook").handle, "facebook");
+            },
             "and can be installed" : {
                 topic:serviceManager.install({srcdir:"Connectors/Twitter"}),
                 "by giving a valid install instance" : function(svcMetaInfo) {
@@ -105,6 +108,11 @@ vows.describe("Service Manager").addBatch({
                     assert.notEqual(svcMetaInfo.icon, undefined);
                 }
             }
+        }
+    },
+    "Services marked as \"autoInstall\"": {
+        "are installed automatically": function() {
+            assert.includes(serviceManager.serviceMap().installed, "contactsviewer");
         }
     },
     "Collections" : {
