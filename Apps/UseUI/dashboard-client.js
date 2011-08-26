@@ -48,7 +48,11 @@ app.use(connect.bodyParser());
 
 app.get('/apps', function(req, res) {
     res.writeHead(200, {'Content-Type': 'application/json'});
-    res.end(JSON.stringify({contacts: {url : lockerRoot + '/Me/contactsviewer/', id : 'contactsviewer'}}));
+    var apps = {contacts: {url : lockerRoot + '/Me/contactsviewer/', id : 'contactsviewer'},
+                photos: {url : lockerRoot + '/Me/hellophotos/', id : 'hellophotos'},
+                links: {url : lockerRoot + '/Me/hellolinks/', id : 'hellolinks'},
+                search: {url : lockerRoot + '/Me/searchapp/', id : 'searchapp'}}
+    res.end(JSON.stringify(apps));
 });
 
 app.get('/config.js', function (req, res) {
