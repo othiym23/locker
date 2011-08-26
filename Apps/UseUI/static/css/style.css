@@ -33,14 +33,19 @@ body {
 }
 
 .app-link {
-    border: 1px solid rgba(255, 255, 255, .29);
-    border-radius: 5px;
-    padding: 5px;
     color: white;
     text-decoration: none;
     font-weight: bold;
     font-size: .9em;
     margin-left: 5px;
+    line-height: 45px;
+    padding: 4px 10px;
+    border-radius: 3px;
+}
+
+.links {
+    float: left;
+    margin-left: 50px;
 }
 
 .app-link:hover {
@@ -49,8 +54,6 @@ body {
 }
 
 .app-link.selected {
-    padding-bottom: 10px;
-    padding-top: 10px;
     background: #ebebeb;
     color: #333;
 }
