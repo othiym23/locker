@@ -32,7 +32,7 @@ $(document).ready(
         
         $('#service-selector').delegate('.provider-link', 'click', function() {
             if ($(this).hasClass('disabled')) return false;
-            accountPopup($(this).attr('href'));
+            accountPopup($(this));
             return false;
         });
 
@@ -84,11 +84,11 @@ var SyncletPoll = (
                 // log("["+provider+"] " + state);
 
                 if (b.state == "running" || b.state == "processing data") {
-                    if (typeof(b.spinner) == "undefined" && !(b.find('.checkmark').is(':visible'))) {
+                    if (typeof(b.spinner) == "undefined" && !(b.$el.find('.checkmark').is(':visible'))) {
                         var target = b.$el.find(".spinner")[0];
                         b.$el.find('a').addClass("disabled");
                         b.spinner = new Spinner(spinnerOpts).spin(target);
-                    } else if (!(b.find('.checkmark').is(':visible'))) {
+                    } else if (!(b.$el.find('.checkmark').is(':visible'))) {
                         b.spinner.spin();
                     }
                 } else if (b.state == "waiting") {
@@ -161,7 +161,7 @@ function drawServices() {
 function drawService(synclet) {
     var newService = $('.service.template').clone();
     newService.find('.provider-icon').attr('src', 'img/icons/' + synclet.provider + '.png');
-    newService.find('.provider-link').attr('href', synclet.authurl);
+    newService.find('.provider-link').attr('href', synclet.authurl).data('provider', synclet.provider);
     newService.find('.provider-name').text(synclet.provider);
     newService.removeClass('template');
     newService.attr('id', synclet.provider + 'connect');
@@ -169,12 +169,19 @@ function drawService(synclet) {
 };
 
 // this needs some cleanup to actually use the proper height + widths
-function accountPopup (url) {
+function accountPopup (elem) {
+    var width = 620;
+    var height = 400;
     var oauthPopupSizes = {foursquare: {height: 540,  width: 960},
                  github: {height: 1000, width: 1000},
-                 twitter: {width: 980, height: 750}
+                 twitter: {width: 630, height: 500},
+                 facebook: {width: 980, height: 705}
                 };
-    var popup = window.open(url, "account", "width=620,height=400,status=no,scrollbars=no,resizable=no");
+    if (oauthPopupSizes[elem.data('provider')]) {
+        width = oauthPopupSizes[elem.data('provider')].width;
+        height = oauthPopupSizes[elem.data('provider')].height;
+    }
+    var popup = window.open(elem.attr('href'), "account", "width=" + width + ",height=" + height + ",status=no,scrollbars=no,resizable=no");
     popup.focus();
 }
 
@@ -188,6 +195,7 @@ function renderApp() {
         var ready = false;
         if (!data[app]) return;
         appId = data[app].id;
+        drawServices();
         (function poll (data) {
             $.getJSON(data[app].url + "ready", function(state) {
                 ready = state;
@@ -212,7 +220,6 @@ function renderApp() {
 
 function expandServices() {
     $('.services-box').hide();
-    drawServices();
     $('#appFrame').animate({height: $('#appFrame').height() - 110}, {queue: false});
     $('#services').animate({height: "110px"}, function() {});
 }
