@@ -84,7 +84,7 @@ var SyncletPoll = (
                 // log("["+provider+"] " + state);
 
                 if (b.state == "running" || b.state == "processing data") {
-                    if (typeof(b.spinner) == "undefined") {
+                    if (typeof(b.spinner) == "undefined" && !(b.find('.checkmark').is(':visible'))) {
                         var target = b.$el.find(".spinner")[0];
                         b.$el.find('a').addClass("disabled");
                         b.spinner = new Spinner(spinnerOpts).spin(target);
