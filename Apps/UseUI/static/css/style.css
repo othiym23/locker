@@ -215,6 +215,7 @@ body {
 }
 
 .service .provider-link.disabled {
+    cursor: auto;
     opacity: .5;
 }
 
