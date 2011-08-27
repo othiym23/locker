@@ -53,7 +53,7 @@ app.get('/', function (req, res) {
     request.get({uri:lockerRoot + '/synclets'}, function(err, resp, body) {
         synclets = JSON.parse(body);
         var connectorCount = 0; // should replace with collection count
-        var path = __dirname + "/wizard/index.html";
+        var path = __dirname + "/static/wizard/index.html";
                    
         for (app in synclets.installed) {
             path = __dirname + "/dashboard.html";
