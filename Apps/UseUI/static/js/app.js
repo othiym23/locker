@@ -26,8 +26,8 @@ $(document).ready(
         $('#service-closer').click(function() {
             userClosed = true;
             $('.services-box').show();
-            $('#appFrame').animate({height: $('#appFrame').height() + 110}, {queue: false});
-            $('#services').animate({height: "0px"}, {queue: false});
+            $('#appFrame').animate({height: $('#appFrame').height() + 110}, {duration: 200, queue: false});
+            $('#services').animate({height: "0px"}, {duration: 200, queue: false});
         });
         
         $('#service-selector').delegate('.provider-link', 'click', function() {
@@ -220,8 +220,8 @@ function renderApp() {
 
 function expandServices() {
     $('.services-box').hide();
-    $('#appFrame').animate({height: $('#appFrame').height() - 110}, {queue: false});
-    $('#services').animate({height: "110px"}, function() {});
+    $('#appFrame').animate({height: $('#appFrame').height() - 110}, {duration: 200, queue: false});
+    $('#services').animate({height: "110px"}, {duration: 200});
 }
 
 function resizeFrame() {
