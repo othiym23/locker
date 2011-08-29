@@ -142,9 +142,12 @@ function mergedManifest(dir)
         }
         return false;
     });
-    if (!serviceInfo) { throw "Invalid service"; }
-    var fullInfo = JSON.parse(fs.readFileSync(lconfig.lockerDir + "/" + serviceInfo.manifest));
-    return lutil.extend(js, fullInfo);
+    if (serviceInfo && serviceInfo.manifest) {
+        var fullInfo = JSON.parse(fs.readFileSync(lconfig.lockerDir + "/" + serviceInfo.manifest));
+        return lutil.extend(js, fullInfo);
+    } else {
+        return js;
+    }
 }
 
 /**
