@@ -143,7 +143,6 @@ exports.findInstalled = function () {
             if(!fs.statSync(dir+'/me.json').isFile()) continue;
             // Don't use metainfo here because we aren't fully setup
             var js = JSON.parse(fs.readFileSync(dir+'/me.json', 'utf-8'));
-            //console.dir(js);
             var serviceInfo = {};
             serviceMap.available.some(function(svcInfo) {
                 if (svcInfo.srcdir == js.srcdir) {
@@ -154,7 +153,7 @@ exports.findInstalled = function () {
             });
             if (!serviceInfo) { throw "Invalid service"; }
             var fullInfo = JSON.parse(fs.readFileSync(lconfig.lockerDir + "/" + serviceInfo.manifest));
-            lutil.extend(fullInfo, js);
+            js = lutil.extend(js, fullInfo);
             if (!js.synclets) {
                 delete js.pid;
                 delete js.starting;
@@ -257,7 +256,7 @@ exports.install = function(metaData) {
     fs.mkdirSync(lconfig.lockerDir + "/" + lconfig.me + "/"+meInfo.id,0755);
     fs.writeFileSync(lconfig.lockerDir + "/" + lconfig.me + "/"+meInfo.id+'/me.json',JSON.stringify(meInfo));
     
-    var fullInfo = exports.metaInfo(me.id);
+    var fullInfo = exports.metaInfo(meInfo.id);
     addEvents(fullInfo);
     fullInfo.externalUri = lconfig.externalBase+"/Me/"+meInfo.id+"/";
     return fullInfo;
@@ -364,9 +363,9 @@ exports.spawn = function(serviceId, callback) {
             try {
                 var returnedProcessInformation = JSON.parse(data);
                 // if they tell us a port, use that
-                if(returnedProcessInformation.port)
-                    svc.port = returnedProcessInformation.port;
+                if(returnedProcessInformation.port) svc.port = returnedProcessInformation.port;
                 svc.uriLocal = "http://localhost:"+svc.port+"/";
+                console.log("Set local uri to " + svc.uriLocal + " for " + svc.id);
                 // save out all updated meta fields
                 //fs.writeFileSync(lconfig.lockerDir + "/" + lconfig.me + "/" + svc.id + '/me.json',JSON.stringify(svc, null, 4));
                 // Set the pid after the write because it's transient to this locker instance only
@@ -420,23 +419,26 @@ exports.spawn = function(serviceId, callback) {
 * Retrieve the meta information for a service
 */
 exports.metaInfo = function(serviceId) {
-    console.log("Looking up " + serviceId);
-    var installedInfo = serviceMap.installed[serviceId]||{};
+    /*
+    var installedInfo = serviceMap.installed[serviceId] || {};
+    console.log("metaInfo")
+    console.dir(installedInfo);
     var serviceInfo;
     serviceMap.available.some(function(svcInfo) {
-        if (svcInfo.srcdir == metaData.srcdir) {
+        if (svcInfo.srcdir == installedInfo.srcdir) {
             serviceInfo = {};
             lutil.extend(serviceInfo, svcInfo);
             return true;
         }
         return false;
     });
-    console.dir(serviceInfo);
     if (!serviceInfo) {
         console.log("Unknown");
         throw "Unknown service " + serviceId;
     }
-    return lutil.extend(installedInfo, serviceInfo);
+    serviceMap.installed[serviceId] = lutil.extend(serviceInfo, installedInfo);
+    */
+    return serviceMap.installed[serviceId];
 }
 
 exports.isInstalled = function(serviceId) {
