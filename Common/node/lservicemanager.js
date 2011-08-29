@@ -72,6 +72,7 @@ function mapMetaData(file, type, installable) {
     metaData.externalUri = lconfig.externalBase+"/Me/"+metaData.id+"/";
     serviceMap.available.push(metaData);
     if (type === "collection") {
+        console.log("***** Should install collection " + metaData.handle);
         if(!metaData.handle) {
             console.error("missing handle for "+file);
             return;
@@ -84,7 +85,7 @@ function mapMetaData(file, type, installable) {
                 err = true
             }
             if(err || !stat) {
-                exports.install(metaData);
+                exports.install(metaData, true);
                 /*
                 metaData.id=metaData.handle;
                 metaData.uri = lconfig.lockerBase+"/Me/"+metaData.id+"/";
@@ -129,6 +130,23 @@ exports.scanDirectory = function(dir, installable) {
     }
 }
 
+function mergedManifest(dir) 
+{
+    // Don't use metainfo here because we aren't fully setup
+    var js = JSON.parse(fs.readFileSync(dir+'/me.json', 'utf-8'));
+    var serviceInfo = {};
+    serviceMap.available.some(function(svcInfo) {
+        if (svcInfo.srcdir == js.srcdir) {
+            for(var a in svcInfo){serviceInfo[a]=svcInfo[a];}
+            return true;
+        }
+        return false;
+    });
+    if (!serviceInfo) { throw "Invalid service"; }
+    var fullInfo = JSON.parse(fs.readFileSync(lconfig.lockerDir + "/" + serviceInfo.manifest));
+    return lutil.extend(js, fullInfo);
+}
+
 /**
 * Scans the Me directory for instaled services
 */
@@ -141,19 +159,7 @@ exports.findInstalled = function () {
         try {
             if(!fs.statSync(dir).isDirectory()) continue;
             if(!fs.statSync(dir+'/me.json').isFile()) continue;
-            // Don't use metainfo here because we aren't fully setup
-            var js = JSON.parse(fs.readFileSync(dir+'/me.json', 'utf-8'));
-            var serviceInfo = {};
-            serviceMap.available.some(function(svcInfo) {
-                if (svcInfo.srcdir == js.srcdir) {
-                    for(var a in svcInfo){serviceInfo[a]=svcInfo[a];}
-                    return true;
-                }
-                return false;
-            });
-            if (!serviceInfo) { throw "Invalid service"; }
-            var fullInfo = JSON.parse(fs.readFileSync(lconfig.lockerDir + "/" + serviceInfo.manifest));
-            js = lutil.extend(js, fullInfo);
+            var js = mergedManifest(dir);
             if (!js.synclets) {
                 delete js.pid;
                 delete js.starting;
@@ -216,7 +222,7 @@ exports.migrate = function(installedDir, metaData) {
 /**
 * Install a service
 */
-exports.install = function(metaData) {
+exports.install = function(metaData, installOverride) {
     var serviceInfo;
     serviceMap.available.some(function(svcInfo) {
         if (svcInfo.srcdir == metaData.srcdir) {
@@ -226,7 +232,8 @@ exports.install = function(metaData) {
         }
         return false;
     });
-    if (!serviceInfo || !serviceInfo.installable) {
+        console.dir(serviceInfo);
+    if (!serviceInfo || !(serviceInfo.installable || installOverride)) {
         return serviceInfo;
     }
     var meInfo = {}; // The info to save to me.json
@@ -235,6 +242,7 @@ exports.install = function(metaData) {
         // the inanity of this try/catch bullshit is drrrrrrnt but async is stupid here and I'm offline to find a better way atm
         var inc = 0;
         try {
+            console.log(lconfig.lockerDir+"/" + lconfig.me + "/"+serviceInfo.handle);
             if(fs.statSync(lconfig.lockerDir+"/" + lconfig.me + "/"+serviceInfo.handle).isDirectory()) {
                 inc++;
                 while(fs.statSync(lconfig.lockerDir+"/" + lconfig.me + "/"+serviceInfo.handle+"-"+inc).isDirectory()) {inc++;}
@@ -248,13 +256,14 @@ exports.install = function(metaData) {
         hash.update(Math.random()+'');
         meInfo.id = hash.digest('hex');        
     }
+    console.dir(meInfo);
     meInfo.srcdir = serviceInfo.srcdir;
     meInfo.is = serviceInfo.is;
-    meInfo.uri = lconfig.lockerBase+"/Me/"+serviceInfo.id+"/";
+    meInfo.uri = lconfig.lockerBase+"/Me/"+meInfo.id+"/";
     meInfo.version = Date.now();
-    serviceMap.installed[meInfo.id] = meInfo;
     fs.mkdirSync(lconfig.lockerDir + "/" + lconfig.me + "/"+meInfo.id,0755);
     fs.writeFileSync(lconfig.lockerDir + "/" + lconfig.me + "/"+meInfo.id+'/me.json',JSON.stringify(meInfo));
+    serviceMap.installed[meInfo.id] = mergedManifest(path.join(lconfig.me, meInfo.id));
     
     var fullInfo = exports.metaInfo(meInfo.id);
     addEvents(fullInfo);
