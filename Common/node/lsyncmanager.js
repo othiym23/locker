@@ -120,6 +120,7 @@ exports.install = function(metaData) {
         throw "invalid synclet, has no provider";
     }
     synclets.installed[serviceInfo.id] = serviceInfo;
+    serviceInfo.version = Date.now();
     fs.mkdirSync(path.join(lconfig.lockerDir, lconfig.me, serviceInfo.id),0755);
     fs.writeFileSync(path.join(lconfig.lockerDir, lconfig.me, serviceInfo.id, 'me.json'),JSON.stringify(serviceInfo, null, 4));
     for (var i = 0; i < serviceInfo.synclets.length; i++) {
@@ -329,7 +330,6 @@ exports.migrate = function(installedDir, metaData) {
                     if (migrate(installedDir)) {
                         metaData.version = migrations[i].substring(0, 13);
                     }
-                    
                     process.chdir(cwd);
                 } catch (E) {
                     console.log("error running migration : " + migrations[i] + " for service " + metaData.title + " ---- " + E);
