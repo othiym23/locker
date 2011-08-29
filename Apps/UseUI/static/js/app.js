@@ -148,8 +148,10 @@ function drawServices() {
             for (var i in data.uses) {
                 for (var j = 0; j < synclets.available.length; j++) {
                     if (synclets.available[j].provider === data.uses[i]) {
-                        providers.push(data.uses[i]);
-                        drawService(synclets.available[j]);
+                        if(synclets.available[j].authurl) {
+                            providers.push(data.uses[i]);
+                            drawService(synclets.available[j]);
+                        }
                     }
                 }
             }
