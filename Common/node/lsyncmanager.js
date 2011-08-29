@@ -59,6 +59,7 @@ exports.findInstalled = function (callback) {
             if(!path.existsSync(dir+'/me.json')) continue;
             var js = JSON.parse(fs.readFileSync(dir+'/me.json', 'utf-8'));
             if (js.synclets) {
+                exports.migrate(dir, js);
                 console.log("Loaded synclets for "+js.id);
                 synclets.installed[js.id] = js;
                 synclets.installed[js.id].status = "waiting";
@@ -309,6 +310,37 @@ function addData (collection, data, info, eventType, callback) {
         }
     }, callback);
 }
+
+/**
+* Migrate a service if necessary
+*/
+exports.migrate = function(installedDir, metaData) {
+    if (!metaData.version) { metaData.version = 1; }
+    var migrations = [];
+    try {
+        migrations = fs.readdirSync(metaData.srcdir + "/migrations");
+    } catch (E) {}
+    if (migrations) {
+        for (var i = 0; i < migrations.length; i++) {
+            if (migrations[i].substring(0, 13) > metaData.version) {
+                try {
+                    var cwd = process.cwd();
+                    migrate = require(cwd + "/" + metaData.srcdir + "/migrations/" + migrations[i]);
+                    if (migrate(installedDir)) {
+                        metaData.version = migrations[i].substring(0, 13);
+                    }
+                    
+                    process.chdir(cwd);
+                } catch (E) {
+                    console.log("error running migration : " + migrations[i] + " for service " + metaData.title + " ---- " + E);
+                    process.chdir(cwd);
+                }
+            }
+        }
+    }
+    return;
+}
+
 /**
 * Map a meta data file JSON with a few more fields and make it available
 */
