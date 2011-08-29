@@ -240,6 +240,9 @@ function processResponse(deleteIDs, info, synclet, response, callback) {
             callback = function() {};
         }
         var dataKeys = [];
+        if (typeof(response.data) === 'string') {
+            return callback('bad data from synclet');
+        }
         for (var i in response.data) {
             dataKeys.push(i);
         }
@@ -301,9 +304,9 @@ function addData (collection, data, info, eventType, callback) {
                 datastore.removeObject(collection, object.obj[info.mongoId], {timeStamp: object.timestamp}, cb);
                 levents.fireEvent(eventType, newEvent.fromService, newEvent.obj.type, newEvent.obj);
             } else {
-                datastore.addObject(collection, object.obj, {timeStamp: object.timestamp}, function(err, type) {
+                datastore.addObject(collection, object.obj, {timeStamp: object.timestamp}, function(err, type, doc) {
                     if (type === 'same') return cb();
-                    newEvent.obj.type = type;
+                    newEvent.obj.data = doc;
                     levents.fireEvent(eventType, newEvent.fromService, newEvent.obj.type, newEvent.obj);
                     cb();
                 });
