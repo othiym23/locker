@@ -232,7 +232,6 @@ exports.install = function(metaData, installOverride) {
         }
         return false;
     });
-        console.dir(serviceInfo);
     if (!serviceInfo || !(serviceInfo.installable || installOverride)) {
         return serviceInfo;
     }
@@ -242,7 +241,6 @@ exports.install = function(metaData, installOverride) {
         // the inanity of this try/catch bullshit is drrrrrrnt but async is stupid here and I'm offline to find a better way atm
         var inc = 0;
         try {
-            console.log(lconfig.lockerDir+"/" + lconfig.me + "/"+serviceInfo.handle);
             if(fs.statSync(lconfig.lockerDir+"/" + lconfig.me + "/"+serviceInfo.handle).isDirectory()) {
                 inc++;
                 while(fs.statSync(lconfig.lockerDir+"/" + lconfig.me + "/"+serviceInfo.handle+"-"+inc).isDirectory()) {inc++;}
@@ -256,7 +254,6 @@ exports.install = function(metaData, installOverride) {
         hash.update(Math.random()+'');
         meInfo.id = hash.digest('hex');        
     }
-    console.dir(meInfo);
     meInfo.srcdir = serviceInfo.srcdir;
     meInfo.is = serviceInfo.is;
     meInfo.uri = lconfig.lockerBase+"/Me/"+meInfo.id+"/";
