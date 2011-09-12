@@ -73,13 +73,32 @@
 
 <script src="socket.io/socket.io.js"></script>
 <script type="text/javascript" charset="utf-8">
+
+/// Format a number with commas
+/*
+* Public domain from http://www.mredkj.com/javascript/nfbasic.html
+*/
+function addCommas(nStr)
+{
+    nStr += '';
+    x = nStr.split('.');
+    x1 = x[0];
+    x2 = x.length > 1 ? '.' + x[1] : '';
+    var rgx = /(\d+)(\d{3})/;
+    while (rgx.test(x1)) {
+    x1 = x1.replace(rgx, '$1' + ',' + '$2');
+    }
+    return x1 + x2;
+}
+
 var socket = io.connect();
 var once = false;
 socket.on('event', function (body) {
   console.log("got event: ", body);
+  $("." + body.name + "sTotalCount").text(addCommas(body.count) + " " + body.name + "s");
   $.gritter.add({
     title:"New " + body.name + "s",
-    text:"Got " + body.count + " new " + body.name + "s",
+    text:"Got " + body.new + " new " + body.name + "s",
     image: "img/" + body.name + "s.png",
     time:5000
   });
