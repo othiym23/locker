@@ -16,7 +16,11 @@ function addCommas(nStr)
     return x1 + x2;
 }
 
-function updateCounts(name, count) {
+allCounts = {};
+
+function updateCounts(name, count, updated) {
+  allCounts[name].lastUpdate = updated
+  allCounts[name].count= count;
   var msg = addCommas(count) + " " + name + "s";
   $("." + name + "sTotalCount").text(msg);
   $("#" + name).attr("title", msg);
@@ -24,6 +28,7 @@ function updateCounts(name, count) {
 
 var socket = io.connect();
 var once = false;
+
 socket.on('event', function (body) {
   console.log("got event: ", body);
   updateCounts(body.name, body.count);
