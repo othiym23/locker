@@ -55,7 +55,6 @@ var isSomeoneListening = 0;
 app.post('/event', function(req, res) {
     res.send({}); // any positive response
     if(isSomeoneListening == 0) return; // ignore if nobody is around, until we have an unlisten option
-    console.log("Sending event on socket.io");
     if (req && req.body) {
         var evInfo = eventInfo[req.body.type];
         evInfo.new++;
@@ -79,7 +78,7 @@ function saveState()
     for (var key in eventInfo) {
         if (eventInfo.hasOwnProperty(key)) counts[key] = {count:eventInfo[key].count};
     }
-    fs.writeFileSync("state.json", JSON.stringify(eventInfo));
+    fs.writeFileSync("state.json", JSON.stringify(counts));
 }
 
 // compare last-sent totals to current ones and send differences
@@ -110,12 +109,17 @@ function bootState()
         }
         for(var type in eventInfo) {
             // stupd vrbos
-            if(eventInfo[type].count > last[type].count) io.sockets.emit('event',{"name":eventInfo[type].name, "count":eventInfo[type].count - last[type].count});
+            if(eventInfo[type].count > last[type].count) io.sockets.emit('event',{"name":eventInfo[type].name, "new":eventInfo[type].count - last[type].count});
         }
         saveState(); // now that we possibly pushed events, note it
         locker.listen("photo","/event");
         locker.listen("link","/event");
-        locker.listen("contact/full","/event");        
+        locker.listen("contact/full","/event");
+        var counts = {};
+        for (var key in eventInfo) {
+            if (eventInfo.hasOwnProperty(key)) counts[eventInfo[key].name] = {count:eventInfo[key].count};
+        }
+        io.sockets.emit("counts", counts);
     });
 }
 
@@ -123,6 +127,11 @@ io.sockets.on('connection', function (socket) {
     console.error("got new socket.io connection");
     bootState();
     isSomeoneListening++;
+    var counts = {};
+    for (var key in eventInfo) {
+        if (eventInfo.hasOwnProperty(key)) counts[eventInfo[key].name] = {count:eventInfo[key].count};
+    }
+    socket.emit("counts", counts);
     socket.on('disconnect', function () {
         isSomeoneListening--;
       });
