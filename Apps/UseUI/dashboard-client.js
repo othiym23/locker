@@ -44,9 +44,9 @@ app.get('/apps', function(req, res) {
 });
 
 var eventInfo = {
-    "link":{"name":"link", "timer":null, "count":0, "new":0},
-    "contact/full":{"name":"contact", "timer":null, "count":0, "new":0},
-    "photo":{"name":"photo", "timer":null, "count":0, "new":0}
+    "link":{"name":"link", "timer":null, "count":0, "new":0, "updated":0},
+    "contact/full":{"name":"contact", "timer":null, "count":0, "new":0, "updated":0},
+    "photo":{"name":"photo", "timer":null, "count":0, "new":0, "updated":0}
 };
 
 // lame way to track if any browser is actually open right now
@@ -63,7 +63,8 @@ app.post('/event', function(req, res) {
         }
         evInfo.timer = setTimeout(function() {
             evInfo.count += evInfo.new;
-            io.sockets.emit('event',{"name":evInfo.name, "new":evInfo.new, "count":evInfo.count});
+            evInfo.updated = new Date().getTime();
+            io.sockets.emit('event',{"name":evInfo.name, "new":evInfo.new, "count":evInfo.count, "updated":evInfo.updated});
             evInfo.new = 0;
             saveState();
         }, 2000);
@@ -93,7 +94,7 @@ function bootState()
             if(coll == 'photos') var evInfo = eventInfo['photo'];
             if(coll == 'contacts') var evInfo = eventInfo['contact/full'];
             evInfo.count = (body && body.count && body.count > 0) ? body.count : 0;
-            console.error("got count set "+evInfo.count+" from "+JSON.stringify(body));
+            evInfo.updated = (body && body.updated && body.updated > 0) ? body.updated : 0;
             callback();
         });
     },function(){
@@ -109,7 +110,7 @@ function bootState()
         }
         for(var type in eventInfo) {
             // stupd vrbos
-            if(eventInfo[type].count > last[type].count) io.sockets.emit('event',{"name":eventInfo[type].name, "new":eventInfo[type].count - last[type].count});
+            if(eventInfo[type].count > last[type].count) io.sockets.emit('event',{"name":eventInfo[type].name, "updated":eventInfo[type].updated, "new":eventInfo[type].count - last[type].count});
         }
         saveState(); // now that we possibly pushed events, note it
         locker.listen("photo","/event");
@@ -117,7 +118,7 @@ function bootState()
         locker.listen("contact/full","/event");
         var counts = {};
         for (var key in eventInfo) {
-            if (eventInfo.hasOwnProperty(key)) counts[eventInfo[key].name] = {count:eventInfo[key].count};
+            if (eventInfo.hasOwnProperty(key)) counts[eventInfo[key].name] = {count:eventInfo[key].count, updated:eventInfo[key].updated};
         }
         io.sockets.emit("counts", counts);
     });
@@ -129,7 +130,7 @@ io.sockets.on('connection', function (socket) {
     isSomeoneListening++;
     var counts = {};
     for (var key in eventInfo) {
-        if (eventInfo.hasOwnProperty(key)) counts[eventInfo[key].name] = {count:eventInfo[key].count};
+        if (eventInfo.hasOwnProperty(key)) counts[eventInfo[key].name] = {count:eventInfo[key].count, updated:eventInfo[key].updated};
     }
     socket.emit("counts", counts);
     socket.on('disconnect', function () {
