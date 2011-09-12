@@ -19,6 +19,8 @@ function addCommas(nStr)
 allCounts = {};
 
 function updateCounts(name, count, updated) {
+  updated = updated || 0;
+  if (!allCounts.hasOwnProperty(name)) allCounts[name] = {};
   allCounts[name].lastUpdate = updated
   allCounts[name].count= count;
   var msg = addCommas(count) + " " + name + "s";
@@ -31,7 +33,7 @@ var once = false;
 
 socket.on('event', function (body) {
   console.log("got event: ", body);
-  updateCounts(body.name, body.count);
+  updateCounts(body.name, body.count, body.updated);
   $.gritter.add({
     title:"New " + body.name + "s",
     text:"Got " + body.new + " new " + body.name + "s",
@@ -43,7 +45,7 @@ socket.on("counts", function(counts) {
   console.log("Counts:",counts);
     for (key in counts) {
         if (counts.hasOwnProperty(key)) {
-            updateCounts(key, counts[key].count);
+            updateCounts(key, counts[key].count, counts[key].updated);
         }
     }
     
