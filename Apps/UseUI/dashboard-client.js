@@ -85,7 +85,7 @@ function bootState()
     console.error("booting state fresh");
     async.forEach(['contacts','links','photos'],function(coll,callback){
         console.error("fetching "+locker.lockerBase+'/Me/'+coll+'/state '+ JSON.stringify(locker) );
-        request.get({uri:locker.lockerBase+'/Me/'+coll+'/state'},function(err,res,body){
+        request.get({uri:locker.lockerBase+'/Me/'+coll+'/state',json:true},function(err,res,body){
             if(coll == 'links') var evInfo = eventInfo['link'];
             if(coll == 'photos') var evInfo = eventInfo['photo'];
             if(coll == 'contacts') var evInfo = eventInfo['contact/full'];
