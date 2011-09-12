@@ -427,6 +427,10 @@ locker.all('/devdashboard*', function(req, res) {
     proxied(req.method, serviceManager.metaInfo('devdashboard'), req.url.substring(14), req, res);
 });
 
+locker.all("/socket.io*", function(req, res) {
+    proxied(req.method, dashboard.instance, req.url, req, res);
+});
+
 locker.get('/', function(req, res) {
     res.redirect(lconfig.externalBase + '/dashboard/');
 });

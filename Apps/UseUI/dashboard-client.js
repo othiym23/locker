@@ -41,18 +41,30 @@ app.get('/apps', function(req, res) {
     res.end(JSON.stringify(apps));
 });
 
-app.get('/event', function(req, res) {
-    res.send({}); // any positive response
+var eventInfo = {
+    "link":{"name":"link", "timer":null, "count":0},
+    "contact/full":{"name":"contact", "timer":null, "count":0},
+    "photo":{"name":"photo", "timer":null, "count":0}
+};
+
+app.post('/event', function(req, res) {
+    console.log("Sending event on socket.io");
     if (req && req.body) {
-        io.sockets.emit('event',req.body);
+        var evInfo = eventInfo[req.body.type];
+        evInfo.count++;
+        if (evInfo.timer) {
+            clearTimeout(evInfo.timer);
+        }
+        evInfo.timer = setTimeout(function() {
+            io.sockets.emit('event',{"name":evInfo.name, "count":evInfo.count});
+        }, 2000);
     }
+    res.send({}); // any positive response
 });
 
-// TODO does multiple simul connections create multiple events?
 io.sockets.on('connection', function (socket) {
     console.error("got new socket.io connection, adding listeners");
     locker.listen("photo","/event");
     locker.listen("link","/event");
     locker.listen("contact/full","/event");
-    // TODO on disconnected, un-listen!
 });
