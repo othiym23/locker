@@ -63,8 +63,8 @@ app.post('/event', function(req, res) {
             clearTimeout(evInfo.timer);
         }
         evInfo.timer = setTimeout(function() {
-            io.sockets.emit('event',{"name":evInfo.name, "count":evInfo.new});
             evInfo.count += evInfo.new;
+            io.sockets.emit('event',{"name":evInfo.name, "new":evInfo.new, "count":evInfo.count});
             evInfo.new = 0;
             saveState();
         }, 2000);
@@ -75,6 +75,10 @@ app.post('/event', function(req, res) {
 // just snapshot to disk every time we push an event so we can compare in the future
 function saveState()
 {
+    var counts = {};
+    for (var key in eventInfo) {
+        if (eventInfo.hasOwnProperty(key)) counts[key] = {count:eventInfo[key].count};
+    }
     fs.writeFileSync("state.json", JSON.stringify(eventInfo));
 }
 
