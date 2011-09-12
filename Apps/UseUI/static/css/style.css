@@ -310,3 +310,15 @@ body {
     top:6px;
     font-size:70%;
 }
+
+.tooltip {
+    display:none;
+    background:transparent url(../img/white_arrow.png) no-repeat;
+    font-size:80%;
+    height:70px;
+    width:160px;
+    padding:25px;
+    padding-top:65px;
+    color:#000;
+    text-align:center; 
+}
