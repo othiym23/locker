@@ -90,6 +90,7 @@ function bootState()
             if(coll == 'photos') var evInfo = eventInfo['photo'];
             if(coll == 'contacts') var evInfo = eventInfo['contact/full'];
             evInfo.count = (body && body.count && body.count > 0) ? body.count : 0;
+            console.error("got count set "+evInfo.count+" from "+JSON.stringify(body));
             callback();
         });
     },function(){
