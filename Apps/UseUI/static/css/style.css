@@ -264,7 +264,7 @@ display:none;
 .services-box {
     cursor: pointer;
     float: right;
-    margin-right: 50px;
+    margin-right: 150px;
     background-color: #67abdc;
     margin-top: 27px;
     padding: 5px;
@@ -364,6 +364,9 @@ display:none;
     height: 100%;
 }
 
-
-
-
+#counters {
+    position:absolute;
+    right:20px;
+    top:6px;
+    font-size:70%;
+}

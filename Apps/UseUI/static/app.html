@@ -19,7 +19,14 @@
 <!--       <a class="app-link" id="search" href="#search">search</a> -->
       <img class="divider" src="img/divider.png">
     </div>
-<div class="services-box-container">
+    <div id='counters'>
+      <ul>
+        <li class='contactsTotalCount'>1,003 contacts</li>
+        <li class='linksTotalCount'>6,534 links</li>
+        <li class='photosTotalCount'>123 photos</li>
+      </ul>
+    </div>
+    <div class="services-box-container">
       <div class="services-box">SERVICES
         <span class="gray">\/</span></div>
       </div>
@@ -79,7 +86,9 @@ socket.on('event', function (body) {
   console.log("got event: ", body);
   $.gritter.add({
     title:"New " + body.name + "s",
-    text:"Got " + body.count + " new " + body.name + "s"
+    text:"Got " + body.count + " new " + body.name + "s",
+    image: "img/" + body.name + "s.png",
+    time:5000
   });
 });
 </script>

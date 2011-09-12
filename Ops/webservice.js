@@ -429,7 +429,7 @@ locker.all('/devdashboard*', function(req, res) {
 });
 
 locker.all("/socket.io*", function(req, res) {
-    proxied(req.method, dashboard.instance, req.url, req, res);
+    if (dashboard && dashboard.instance) proxied(req.method, dashboard.instance, req.url, req, res);
 });
 
 locker.get('/', function(req, res) {
