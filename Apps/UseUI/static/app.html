@@ -5,6 +5,7 @@
   <title>the locker project</title>
   <link rel="stylesheet" href="css/reset.css" />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" type="text/css" href="css/jquery.gritter.css">
 </head>
 
 <body class="app-page">
@@ -52,7 +53,8 @@
 <script src="/static/js/jquery-1.6.1.min.js"></script>
 <script type="text/javascript" src="js/app.js"></script>
 <script src="js/spin.min.js"></script>
-<script type="text/javascript" charset="UTF-8">
+<script type="text/javascript" src='js/jquery.gritter.js'></script>
+<script type="text/javascript" charset="utf-8">
   var is_ssl = ("https:" == document.location.protocol);
   var asset_host = is_ssl ? "https://s3.amazonaws.com/getsatisfaction.com/" : "http://s3.amazonaws.com/getsatisfaction.com/";
   document.write(unescape("%3Cscript src='" + asset_host + "javascripts/feedback-v2.js' type='text/javascript'%3E%3C/script%3E"));
@@ -72,11 +74,13 @@
 <script src="socket.io/socket.io.js"></script>
 <script type="text/javascript" charset="utf-8">
 var socket = io.connect();
-
 var once = false;
 socket.on('event', function (body) {
-	if(!once) window.alert(body);
-	once = true;
+  console.log("got event: ", body);
+  $.gritter.add({
+    title:"New " + body.name + "s",
+    text:"Got " + body.count + " new " + body.name + "s"
+  });
 });
 </script>
 </html>
