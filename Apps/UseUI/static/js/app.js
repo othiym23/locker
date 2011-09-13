@@ -48,34 +48,33 @@ $(document).ready(
             return false;
          });
 
-        // collection navigation tooltips
-        $(".app-link[title]").tooltip(
-            {
-                position:"bottom center",
-                predelay:1000,
-                onBeforeShow: function(ev) {
-                    var id = this.getTrigger().attr("id");
-                    // Chop off the s!
-                    id = id.substring(0, id.length - 1);
-                    var tip = $("." + id + "sTotalCount").text() + "<br />";
-                    if (allCounts[id] && allCounts[id].lastUpdate) {
-                        var timeDiff = Date.now() - allCounts[id].lastUpdate;
-                        if (timeDiff < 60000) {
-                            tip += "last updated less than a minute ago";
-                        } else if (timeDiff < 3600000) {
-                            tip += "last updated about " + Math.floor(timeDiff / 60000) + " minutes ago";
-                        } else if (timeDiff < 43200000) {
-                            tip += "last updated about " + Math.floor(timeDiff / 3600000) + " hours ago";
-                        } else {
-                            var d = new Date;
-                            d.setTime(allCounts[id].lastUpdate);
-                            console.log(allCounts);
-                            tip += "last updated " + d.toString();
-                        }
-                    }
-                    this.getTip().html(tip);
+
+         $(".app-link[title]").tooltip({
+            position:"bottom center",
+            predelay:500,
+            onBeforeShow: function(ev) {
+              var id = this.getTrigger().attr("id");
+              // Chop off the s!
+              id = id.substring(0, id.length - 1);
+              var tip = $("." + id + "sTotalCount").text() + "<br />";
+              if (allCounts[id] && allCounts[id].lastUpdate) {
+                var timeDiff = Date.now() - allCounts[id].lastUpdate;
+                if (timeDiff < 60000) {
+                  tip += "last updated less than a minute ago";
+                } else if (timeDiff < 3600000) {
+                  tip += "last updated about " + Math.floor(timeDiff / 60000) + " minutes ago";
+                } else if (timeDiff < 43200000) {
+                  tip += "last updated about " + Math.floor(timeDiff / 3600000) + " hours ago";
+                } else {
+                  var d = new Date;
+                  d.setTime(allCounts[id].lastUpdate);
+                  console.log(allCounts);
+                  tip += "last updated " + d.toString();
                 }
-            });
+              }
+              this.getTip().html("<div>" + tip + "</div>");
+            }
+        });
 
         renderApp();
         
