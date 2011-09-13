@@ -107,3 +107,11 @@ exports.listen = function(type, callbackEndpoint, callbackFunction) {
         if(callbackFunction) callbackFunction(error);
     });
 };
+
+exports.deafen = function(type, callbackEndpoint, callbackFunction) {
+    request.get({url:baseServiceUrl + '/deafen?' + querystring.stringify({'type':type, 'cb':callbackEndpoint})}, 
+    function(error, response, body) {
+        if(error) sys.debug(error);
+        if(callbackFunction) callbackFunction(error);
+    });
+};
