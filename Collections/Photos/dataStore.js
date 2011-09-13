@@ -16,6 +16,7 @@ var request = require("request");
 var crypto = require("crypto");
 var async = require("async");
 var url = require("url");
+var fs = require('fs');
 
 function processTwitPic(svcId, data, cb) {
     if (!data.id) {
