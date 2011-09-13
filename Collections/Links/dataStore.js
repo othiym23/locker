@@ -7,6 +7,7 @@
 *
 */
 var logger = require(__dirname + "/../../Common/node/logger").logger;
+var fs = require('fs');
 
 // in the future we'll probably need a visitCollection too
 var linkCollection, encounterCollection;

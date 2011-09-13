@@ -10,6 +10,7 @@
 var collection;
 var db;
 var lconfig = require('../../Common/node/lconfig');
+var fs = require('fs');
 
 exports.init = function(mongoCollection, mongo) {
     collection = mongoCollection;
