@@ -36,6 +36,19 @@ exports.get = function(id, callback) {
     collection.findOne({_id: new db.bson_serializer.ObjectID(id)}, callback);
 }
 
+var writeTimer = false;
+function updateState()
+{
+    if (writeTimer) {
+        clearTimeout(writeTimer);
+    }
+    writeTimer = setTimeout(function() {
+        try {
+            fs.writeFileSync("state.json", JSON.stringify({updated:new Date().getTime()}));
+        } catch (E) {}
+    }, 5000);    
+}
+
 exports.addEvent = function(eventBody, callback) {
     var target;
 
@@ -76,6 +89,7 @@ exports.addEvent = function(eventBody, callback) {
                 // also, should the source be what initiated the change, or just contacts?  putting contacts for now.
                 //
                 // var eventObj = {source: req.body.obj.via, type:req.body.obj.type, data:doc};
+                updateState();
                 var eventObj = {source: "contacts", type:eventBody.obj.type, data:doc};
                 return callback(undefined, eventObj);
             });

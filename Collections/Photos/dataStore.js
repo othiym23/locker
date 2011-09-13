@@ -143,6 +143,19 @@ function processFoursquare(svcId, data, cb)
     },cb);
 }
 
+var writeTimer = false;
+function updateState()
+{
+    if (writeTimer) {
+        clearTimeout(writeTimer);
+    }
+    writeTimer = setTimeout(function() {
+        try {
+            fs.writeFileSync("state.json", JSON.stringify({updated:new Date().getTime()}));
+        } catch (E) {}
+    }, 5000);    
+}
+
 function saveCommonPhoto(photoInfo, cb) {
     // This is the only area we do basic matching on right now.  We'll do more later
     var query = [{url:photoInfo.url}];
@@ -154,6 +167,7 @@ function saveCommonPhoto(photoInfo, cb) {
         if (!err) {
             logger.debug("PHOTODOCO:"+JSON.stringify(doc));
             locker.event("photo", doc, "new");
+            updateState();
         }
         cb(err, doc);
     });
