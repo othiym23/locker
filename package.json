@@ -37,6 +37,7 @@
         "winston": "=0.4.0",
         "clucene": "=0.1.2",
         "socket.io": "=0.8.4",
+        "socket.io-client": "=0.8.4",
         "jade": "= 0.15.4",
         "airbrake": "=0.2.2",
 
