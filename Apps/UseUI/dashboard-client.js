@@ -54,7 +54,7 @@ var isSomeoneListening = 0;
 
 app.post('/event', function(req, res) {
     res.send({}); // any positive response
-    if(isSomeoneListening == 0) return; // ignore if nobody is around, until we have an unlisten option
+    if(isSomeoneListening == 0) return; // ignore if nobody is around, shouldn't be getting any anyway
     if (req && req.body) {
         var evInfo = eventInfo[req.body.type];
         evInfo.new++;
@@ -135,5 +135,13 @@ io.sockets.on('connection', function (socket) {
     socket.emit("counts", counts);
     socket.on('disconnect', function () {
         isSomeoneListening--;
+        // when nobody is around, don't receive events anymore
+        if(isSomeoneListening == 0)
+        {
+            console.error("everybody left, quiesce");
+            locker.deafen("photo","/event");
+            locker.deafen("link","/event");
+            locker.deafen("contact/full","/event");
+        }
       });
 });
