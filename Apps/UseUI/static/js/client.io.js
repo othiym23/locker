@@ -23,9 +23,14 @@ function updateCounts(name, count, updated) {
   if (!allCounts.hasOwnProperty(name)) allCounts[name] = {};
   allCounts[name].lastUpdate = updated
   allCounts[name].count= count;
-  var msg = addCommas(count) + " " + name + "s";
+  var msg = addCommas(count);
   $("." + name + "sTotalCount").text(msg);
   $("#" + name).attr("title", msg);
+  if (userEmail) {
+    $(".app-link-floater").css("margin-bottom", "-1em");
+    $(".app-link-centerer").css("height", "1.5em");
+    $(".buttonCounter").show();
+  }
 }
 
 var socket = io.connect();

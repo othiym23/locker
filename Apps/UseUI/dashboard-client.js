@@ -26,6 +26,7 @@ module.exports = function(passedLocker, passedExternalBase, listenPort, callback
 };
 
 var app = express.createServer();
+app.use(express.cookieParser());
 
 app.configure(function() {
     app.set('views', __dirname + '/views');
