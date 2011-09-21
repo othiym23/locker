@@ -1,26 +1,34 @@
 <!DOCTYPE html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>
-	<% if (dashboard && dashboard.customTitle) { %>
-		<%= dashboard.customTitle %>
-	<% } else {%>
-		the locker project
-	<% } %></title>
+    <% if (dashboard && dashboard.customTitle) { %>
+      <%= dashboard.customTitle %>
+    <% } else {%>
+      the locker project
+    <% } %>
+  </title>
   <link rel="stylesheet" href="css/reset.css" />
   <link rel="stylesheet" href="/static/css/global.css" />
   <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" type="text/css" href="css/jquery.gritter.css">
+  <link rel="stylesheet" type="text/css" href="css/jquery.gritter.css"/>
 </head>
 
 <body class="app-page">
 
   <div class="header">
-    <a class="home-logo" href="app.html">
-			<img src="<% if(dashboard && dashboard.customLogo) { %><%= dashboard.customLogo %><% } else {%>img/tlp_logo.png<% } %>">
-		</a>
+    <a class="home-logo" href="index.html">
+      <img src="<% if(dashboard && dashboard.customLogo) { %><%= dashboard.customLogo %><% } else {%>img/tlp_logo.png<% } %>">
+    </a>
     <div class="app-links">
+      <a class="app-link" id="photos" href="#photos" title='Loading photo count...'>PHOTOS</a>
+      <a class="app-link" id="contacts" href="#contacts" title='Loading contacts count...'>CONTACTS</a>
+      <a class="app-link" id="links" href="#links" title='Loading links count...'>LINKS</a>
+      <!--       <a class="app-link" id="search" href="#search">search</a> -->
+      <img class="divider" src="img/divider.png"/>
+    </div>
+    <div id='counters'>
       <ul>
       <li class='app-link' id="photos">
         <div class='app-link-floater'></div><div class='app-link-centerer'>
@@ -42,7 +50,7 @@
       </li>
       </ul>
     </div>
-    <img class="divider" src="img/divider.png">    
+    <img class="divider" src="img/divider.png">
     <div id="nav-search">
       <form id="nav-search" action="?" method="get">
         <input placeholder="&nbsp;Search your contacts, links, photos" type="text" class="search" />
@@ -66,7 +74,7 @@
       </ul>
     </div>
     <% } %>
-    
+
   </div>
   <div class="services-box-container">
     <div class="services-box">SERVICES&nbsp;&#x25BC;</div>
@@ -80,7 +88,7 @@
         <a href="#" class="provider-link"><img class="provider-icon" src=""/></a>
         <a href="#" class="provider-link"><p class="provider-name">facebook</p></a>
         <div class="spinner"></div>
-        <img class="checkmark" src="img/checkmark.png">
+        <img class="checkmark" src="img/checkmark.png"/>
       </div>
     </div>
     <div id="service-closer"></div>
@@ -90,33 +98,33 @@
     <iframe id="appFrame"></iframe>
   </div>
 
-<footer class="useui">
-	<% if (customFooter) { %>
-		<%- customFooter %>
-	<% } else { %>
-		<a href="http://lockerproject.org/#about" target="_blank">About the Locker Project</a> |  <a href="http://github.com/LockerProject/Locker/" target="_blank">Contribute</a> | <a href="https://github.com/LockerProject/Locker/commit/<%= revision %>">ver: <%= revision %></a>
-	<% } %>
-</footer>
+  <footer class="useui">
+    <% if (customFooter) { %>
+    <%- customFooter %>
+    <% } else { %>
+    <a href="http://lockerproject.org/#about" target="_blank">About the Locker Project</a> |  <a href="http://github.com/LockerProject/Locker/" target="_blank">Contribute</a> | <a href="https://github.com/LockerProject/Locker/commit/<%= revision %>">ver: <%= revision %></a>
+    <% } %>
+  </footer>
 
-<script src="/static/js/jquery-1.6.1.min.js"></script>
-<script type="text/javascript" src="js/app.js"></script>
-<script src="js/spin.min.js"></script>
-<script type="text/javascript" src='js/jquery.gritter.js'></script>
-<script type="text/javascript" charset="utf-8">
-  var is_ssl = ("https:" == document.location.protocol);
-  var asset_host = is_ssl ? "https://s3.amazonaws.com/getsatisfaction.com/" : "http://s3.amazonaws.com/getsatisfaction.com/";
-  document.write(unescape("%3Cscript src='" + asset_host + "javascripts/feedback-v2.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
+  <script src="/static/js/jquery-1.6.1.min.js"></script>
+  <script type="text/javascript" src="js/app.js"></script>
+  <script src="js/spin.min.js"></script>
+  <script type="text/javascript" src='js/jquery.gritter.js'></script>
+  <script type="text/javascript" charset="utf-8">
+    var is_ssl = ("https:" == document.location.protocol);
+    var asset_host = is_ssl ? "https://s3.amazonaws.com/getsatisfaction.com/" : "http://s3.amazonaws.com/getsatisfaction.com/";
+    document.write(unescape("%3Cscript src='" + asset_host + "javascripts/feedback-v2.js' type='text/javascript'%3E%3C/script%3E"));
+  </script>
 
-<script type="text/javascript" charset="UTF-8">
- var feedback_widget_options = {};
-  feedback_widget_options.display = "overlay";
-  feedback_widget_options.company = "locker_project";
-  feedback_widget_options.placement = "bottom";
-  feedback_widget_options.color = "#222";
-  feedback_widget_options.style = "question";
-  var feedback_widget = new GSFN.feedback_widget(feedback_widget_options);
-</script>
+  <script type="text/javascript" charset="UTF-8">
+    var feedback_widget_options = {};
+    feedback_widget_options.display = "overlay";
+    feedback_widget_options.company = "locker_project";
+    feedback_widget_options.placement = "bottom";
+    feedback_widget_options.color = "#222";
+    feedback_widget_options.style = "question";
+    var feedback_widget = new GSFN.feedback_widget(feedback_widget_options);
+  </script>
 
 <script src="socket.io/socket.io.js"></script>
 <script type="text/javascript" charset="utf-8" src='js/client.io.js'></script>

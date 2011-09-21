@@ -28,13 +28,13 @@ $(document).ready(
         $('#service-closer').click(function() {
             userClosed = true;
             $('#appFrame').animate({height: $('#appFrame').height() + 110}, {duration: 200, queue: false});
-            $('#services').animate({height: "0px"}, {duration: 200, queue: false, complete:function() { 
+            $('#services').animate({height: "0px"}, {duration: 200, queue: false, complete:function() {
                     $('.services-box-container').show();
                     resizeFrame();
                 }
             });
         });
-        
+
         // service buttons
         $('#service-selector').delegate('.provider-link', 'click', function() {
             if ($(this).hasClass('disabled')) return false;
@@ -45,12 +45,14 @@ $(document).ready(
         // search box
         $('#nav-search').submit(function() {
             var inputText = $("#nav-search .search").val();
+            $("#nav-search .search").val("");
             window.location.hash = "search";
             $('.selected').removeClass('selected');
             $("#appFrame")[0].contentWindow.location.replace("/Me/searchapp/search?type=&searchterm="+inputText);
             return false;
         });
-        
+
+
         $(".app-link[title]").tooltip({
             position:"bottom center",
             predelay:750,
@@ -82,7 +84,7 @@ $(document).ready(
         });
 
         renderApp();
-        
+
         $(window).resize(resizeFrame);
         resizeFrame();
     }

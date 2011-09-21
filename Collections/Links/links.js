@@ -12,8 +12,10 @@
 var fs = require('fs'),
     url = require('url'),
     request = require('request'),
+    lconfig = require('../../Common/node/lconfig.js');
     locker = require('../../Common/node/locker.js');
 var async = require("async");
+lconfig.load('../../Config/config.json');
 
 var dataIn = require('./dataIn'); // for processing incoming twitter/facebook/etc data types
 var dataStore = require("./dataStore"); // storage/retreival of raw links and encounters
@@ -175,6 +177,12 @@ for(var f in util)
 {
     if(f == 'init') continue;
     genericApi('/'+f,util[f]);
+}
+
+// catch exceptions, links are very garbagey
+if (lconfig.airbrakeKey) {
+    var airbrake = require('airbrake').createClient(lconfig.airbrakeKey);
+    airbrake.handleExceptions();
 }
 
 // Process the startup JSON object
