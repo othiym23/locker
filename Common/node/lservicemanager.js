@@ -14,6 +14,7 @@ var crypto = require("crypto");
 var util = require("util");
 var spawn = require('child_process').spawn;
 var levents = require('levents');
+var express = require('express');
 var wrench = require('wrench');
 var lutil = require(__dirname + "/lutil");
 
@@ -189,7 +190,7 @@ exports.findInstalled = function () {
                     console.log("Loaded " + js.id);
                 }
             }
-            if (js.require) {
+            if (js.require || js.static) {
                 js.externalUri = lconfig.externalBase+"/Me/"+js.id+"/";
                 exports.load(js);
                 serviceMap.installed[js.id] = js;
@@ -361,11 +362,7 @@ exports.spawn = function(serviceId, callback) {
     for(var i in serviceMap.available) {
         if(serviceMap.available[i].srcdir == svc.srcdir) {
             serviceInfo = serviceMap.available[i];
-            if (serviceInfo.static == "true") {
-                run = "node " + __dirname + "/app/static.js";
-            } else {
-                run = serviceInfo.run;
-            }
+            run = serviceInfo.run;
             break;
         }
     }
@@ -485,7 +482,14 @@ exports.spawn = function(serviceId, callback) {
 
 exports.load = function(svcInfo) {
     svcInfo.srcdir = path.join(lconfig.lockerDir, svcInfo.srcdir);
-    var app = require(path.join(svcInfo.srcdir, svcInfo.require))(exports.webServer, svcInfo);
+    if (svcInfo.static) {
+        exports.webServer.use('/Me/' + svcInfo.id, express.static(path.join(svcInfo.srcdir, 'static')));
+        exports.webServer.get(path.join('/Me/' + svcInfo.id + '/ready'), function(req, res) {
+            res.send('true');
+        });
+    } else {
+        require(path.join(svcInfo.srcdir, svcInfo.require))(exports.webServer, svcInfo);
+    }
 }
 /**
 * Retrieve the meta information for a service
@@ -629,7 +633,7 @@ exports.isRunning = function(serviceId) {
 }
 
 exports.isInprocess = function(serviceId) {
-    return exports.isInstalled(serviceId) && exports.metaInfo(serviceId).require;
+    return exports.isInstalled(serviceId) && (exports.metaInfo(serviceId).require || exports.metaInfo(serviceId).static);
 }
 
 function checkForShutdown() {
