@@ -343,6 +343,7 @@ exports.spawn = function(serviceId, callback) {
 
     // Already running
     if (svc.pid) return;
+    if (svc.require) return;
     // Queue up callbacks if we are already trying to start this service
     if (callback) {
         if (svc.hasOwnProperty("starting")) {
@@ -484,7 +485,7 @@ exports.spawn = function(serviceId, callback) {
 
 exports.load = function(svcInfo) {
     svcInfo.srcdir = path.join(lconfig.lockerDir, svcInfo.srcdir);
-    require(path.join(svcInfo.srcdir, svcInfo.require))(exports.webServer, svcInfo);
+    var app = require(path.join(svcInfo.srcdir, svcInfo.require))(exports.webServer, svcInfo);
 }
 /**
 * Retrieve the meta information for a service
@@ -625,6 +626,10 @@ exports.enable = function(id, callback) {
 */
 exports.isRunning = function(serviceId) {
     return exports.isInstalled(serviceId) && exports.metaInfo(serviceId).pid;
+}
+
+exports.isInprocess = function(serviceId) {
+    return exports.isInstalled(serviceId) && exports.metaInfo(serviceId).require;
 }
 
 function checkForShutdown() {

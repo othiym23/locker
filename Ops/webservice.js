@@ -261,13 +261,10 @@ locker.post('/core/:svcId/enable', function(req, res) {
 // ME PROXY
 // all of the requests to something installed (proxy them, moar future-safe)
 locker.all('/Me/*', function(req, res, next) {
-    // express doens't seem to have any way to insert routes higher in the route chain, so
-    // if another route has been added to handle this request, defer to it
-    if (locker.match[req.method.toLowerCase()](req.url).length > 1) { return next(); }
-    proxyRequest(req, res);
+    proxyRequest(req, res, next);
 });
 
-function proxyRequest(req, res) {
+function proxyRequest(req, res, next) {
     var slashIndex = req.url.indexOf("/", 4);
     if (slashIndex < 0) slashIndex = req.url.length;
     var id = req.url.substring(4, slashIndex).toLowerCase();
@@ -292,6 +289,9 @@ function proxyRequest(req, res) {
         }
         console.log("auto-installing "+id);
         serviceManager.install(match); // magically auto-install!
+    }
+    if (serviceManager.isInprocess(id)) {
+        return next();
     }
     if (!serviceManager.isRunning(id)) {
         console.log("Having to spawn " + id);

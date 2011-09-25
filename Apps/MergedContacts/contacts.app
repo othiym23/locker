@@ -6,5 +6,5 @@
     "handle":"contactsviewer",
     "uses":["facebook", "twitter", "foursquare", "gcontacts", "github", "flickr", "tumblr"],
     "autoInstall":true,
-    "run":"node contacts.js"
+    "require":"contacts.js"
 }

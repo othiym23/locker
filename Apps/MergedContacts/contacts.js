@@ -7,34 +7,24 @@
 *
 */
 
-var express = require('express');
-var connect = require('connect');
+var lconfig = require(__dirname + "/../../Common/node/lconfig");
 var request = require('request');
-    
-var app = express.createServer();
-var collUrl;
+var express = require('express');
 
-app.get('/ready', function(req, res) {
-    res.writeHead(200);
-    request.get({url:collUrl}, function(err, resp, body) {
-        if(JSON.parse(body).count > 0) {
-            res.end('true');
-            return;
-        }
-        res.end('false');
+module.exports = function(app, svcInfo) {
+    var lockerBase = lconfig.lockerBase;
+    var prefix = '/Me/' + svcInfo.id;
+
+    app.get(prefix + '/ready', function(req, res) {
+        res.writeHead(200);
+        request.get({url:lockerBase + '/Me/contacts/state'}, function(err, resp, body) {
+            if(JSON.parse(body).count > 0) {
+                res.end('true');
+                return;
+            }
+            res.end('false');
+        });
     });
-});
 
-app.use(express.static(__dirname + '/static'));
-
-
-// Process the startup JSON object
-process.stdin.resume();
-process.stdin.on("data", function(data) {
-    var lockerInfo = JSON.parse(data);
-    collUrl = lockerInfo.lockerUrl + '/Me/contacts/state';
-    process.chdir(lockerInfo.workingDirectory);
-    app.listen(lockerInfo.port, "localhost", function() {
-        process.stdout.write(data);
-    });
-});
+    app.use(prefix, express.static(__dirname + '/static'));
+}
