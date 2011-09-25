@@ -9,6 +9,7 @@
 
 // merge contacts from connectors
 var lconfig = require(__dirname + "/../../Common/node/lconfig")
+  , levents = require(__dirname + "/../../Common/node/levents")
   , fs = require('fs')
   , sync = require(__dirname + '/sync')
   , dataStore = require(__dirname + "/dataStore")
@@ -67,10 +68,8 @@ module.exports = function(app, svcInfo) {
             dataStore.addEvent(eventObj, function(err, finalObj) {
                 if (err) {
                     console.log('failed to process event in contacts collection - ' + err);
-                } else {
-                    if (finalObj) {
-                        events.emit('contact/full', finalObj);
-                    }
+                } else if (finalObj) {
+                    levents.fireEvent('contact/full', svcInfo.id, finalObj.action, finalObj);
                 }
             });
         });

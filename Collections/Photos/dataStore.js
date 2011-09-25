@@ -11,6 +11,8 @@ var collection;
 var db;
 var lconfig = require('../../Common/node/lconfig');
 var locker = require("../../Common/node/locker");
+var levents = require('../../Common/node/levents');
+var events = locker.events;
 var logger = require("logger").logger;
 var request = require("request");
 var crypto = require("crypto");
@@ -168,7 +170,7 @@ function saveCommonPhoto(photoInfo, cb) {
     collection.findAndModify({$or:query}, [['_id','asc']], {$set:photoInfo}, {safe:true, upsert:true, new: true}, function(err, doc) {
         if (!err) {
             logger.debug("PHOTODOCO:"+JSON.stringify(doc));
-            locker.event("photo", doc, "new");
+            levents.fireEvent('photo', id, 'new', doc);
             updateState();
         }
         cb(err, doc);

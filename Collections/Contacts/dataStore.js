@@ -15,7 +15,7 @@ var id;
 
 exports.init = function(mongoCollection, mongo, svcid) {
     collection = mongoCollection;
-    db = mongo.dbClient;
+    db = mongo.client;
     id = svcid;
 }
 
