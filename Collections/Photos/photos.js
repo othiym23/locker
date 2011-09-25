@@ -102,7 +102,7 @@ module.exports = function(app, svcInfo) {
     });
 
     for (var i = 0; i < svcInfo.events.length; i++) {
-        events.on(svcInfo[i], function(eventObj) {
+        events.on(svcInfo.events[i], function(eventObj) {
             dataStore.processEvent(eventObj, function(err) {
                 if (err) {
                     logger.debug('error processing: ' + err);

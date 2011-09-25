@@ -47,16 +47,17 @@ exports.makeRequest = function(httpOpts, body, callback) {
 exports.fireEvent = function(serviceType, fromServiceId, action, obj) {
     logger.debug("Firing an event for " + serviceType + " from " + fromServiceId + " action(" + action + ")");
     // Short circuit when no one is listening
-    if (!eventListeners.hasOwnProperty(serviceType)) return;
     var newEventInfo = {
         type:serviceType,
         action:action,
         via:fromServiceId,
         timestamp:Date.now(),
-        obj:obj,
-        listeners:eventListeners[serviceType].slice()
+        obj:obj
     };
+    locker.events.emit(newEventInfo.type, newEventInfo);
     // console.log(require("sys").inspect(newEventInfo));
+    if (!eventListeners.hasOwnProperty(serviceType)) return;
+    newEventInfo.listeners = eventListeners[serviceType].slice();
     if (!processingEvents.hasOwnProperty(fromServiceId)) processingEvents[fromServiceId] = [];
     var queue = processingEvents[fromServiceId];
     queue.push(newEventInfo);
@@ -91,7 +92,7 @@ function processEvents(queue) {
     // We loop over all the pending events to fire from the service
     do {
         var curEvent = queue.pop();
-        locker.events.emit(curEvent.type, curEvent);
+        logger.debug('about to emit event to ' + curEvent.type);
         //console.log("Current event from " + curEvent.via + " " + curEvent.listeners.length + " listeners");
         curEvent.listeners.forEach(function(listener) {
             if (!serviceManager.isInstalled(listener.id)) return;

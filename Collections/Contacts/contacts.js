@@ -63,7 +63,7 @@ module.exports = function(app, svcInfo) {
     });
 
     for (var i = 0; i < svcInfo.events.length; i++) {
-        events.on(svcInfo[i], function(eventObj) {
+        events.on(svcInfo.events[i], function(eventObj) {
             dataStore.addEvent(eventObj, function(err, finalObj) {
                 if (err) {
                     console.log('failed to process event in contacts collection - ' + err);
