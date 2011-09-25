@@ -14,6 +14,7 @@ var lconfig = require("lconfig");
 var serviceManager = require("lservicemanager");
 var logger = require("./logger.js").logger;
 var syncManager = require('lsyncmanager');
+var locker = require('locker');
 
 var eventListeners = {};
 var processingEvents = {}; // just a map of arrays of the service events that are currently being processed
@@ -60,7 +61,7 @@ exports.fireEvent = function(serviceType, fromServiceId, action, obj) {
     var queue = processingEvents[fromServiceId];
     queue.push(newEventInfo);
     // We bail out unless this is the first time into the queue
-    if (queue.length == 1) 
+    if (queue.length == 1)
         processEvents(queue);
     else
         process.nextTick(function() { processEvents(queue); });
@@ -90,6 +91,7 @@ function processEvents(queue) {
     // We loop over all the pending events to fire from the service
     do {
         var curEvent = queue.pop();
+        locker.events.emit(curEvent.type, curEvent);
         //console.log("Current event from " + curEvent.via + " " + curEvent.listeners.length + " listeners");
         curEvent.listeners.forEach(function(listener) {
             if (!serviceManager.isInstalled(listener.id)) return;

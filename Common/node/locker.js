@@ -14,14 +14,18 @@ var request = require('request'),
     url = require("url"),
     lstate = require("lstate"),
     querystring = require("querystring");
-    
+
 var lmongoclient;
 
 var lockerBase;
 var localServiceId;
 var baseServiceUrl;
 
+var EventEmitter = require('events').EventEmitter;
+
 exports.lockerBase = lockerBase;
+exports.events = new EventEmitter();
+exports.events.setMaxListeners(0);
 
 exports.initClient = function(instanceInfo) {
     var meData = fs.readFileSync(instanceInfo.workingDirectory + "/me.json");
@@ -30,7 +34,7 @@ exports.initClient = function(instanceInfo) {
     exports.lockerBase = instanceInfo.lockerUrl;
     baseServiceUrl = exports.lockerBase + "/core/" + localServiceId;
     if(instanceInfo.mongo) {
-        lmongoclient = require(__dirname + '/lmongoclient')(instanceInfo.mongo.host, instanceInfo.mongo.port, 
+        lmongoclient = require(__dirname + '/lmongoclient')(instanceInfo.mongo.host, instanceInfo.mongo.port,
                                                             localServiceId, instanceInfo.mongo.collections);
         exports.connectToMongo = lmongoclient.connect;
     }
@@ -69,7 +73,7 @@ exports.map = function(callback) {
 
 exports.providers = function(types, callback) {
     if (typeof(types) == "string") types = [types];
-    request.get({url:exports.lockerBase + "/providers?" + querystring.stringify({"types":types.join(",")})}, 
+    request.get({url:exports.lockerBase + "/providers?" + querystring.stringify({"types":types.join(",")})},
     function(error, res, body) {
         callback(error, body ? JSON.parse(body) : undefined);
     });
@@ -94,14 +98,14 @@ exports.event = function(type, obj, action) {
  * Sign up to be notified of events
  * type - the MIME-style type of the object (e.g. photo/flickr, message/IMAP, or link/firefox)
  * callback - the URL path at the listener to callback to
- * 
- * for example, if our id is "foo" and we want to get a ping at "/photoListener" 
+ *
+ * for example, if our id is "foo" and we want to get a ping at "/photoListener"
  * for photos from a flickr connector with id "bar", our call would look like this:
- * 
+ *
  * listen("photo/flickr", "/photoListener");
  */
 exports.listen = function(type, callbackEndpoint, callbackFunction) {
-    request.get({url:baseServiceUrl + '/listen?' + querystring.stringify({'type':type, 'cb':callbackEndpoint})}, 
+    request.get({url:baseServiceUrl + '/listen?' + querystring.stringify({'type':type, 'cb':callbackEndpoint})},
     function(error, response, body) {
         if(error) sys.debug(error);
         if(callbackFunction) callbackFunction(error);
@@ -109,7 +113,7 @@ exports.listen = function(type, callbackEndpoint, callbackFunction) {
 };
 
 exports.deafen = function(type, callbackEndpoint, callbackFunction) {
-    request.get({url:baseServiceUrl + '/deafen?' + querystring.stringify({'type':type, 'cb':callbackEndpoint})}, 
+    request.get({url:baseServiceUrl + '/deafen?' + querystring.stringify({'type':type, 'cb':callbackEndpoint})},
     function(error, response, body) {
         if(error) sys.debug(error);
         if(callbackFunction) callbackFunction(error);

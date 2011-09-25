@@ -28,6 +28,8 @@ var shuttingDown = null;
 var lockerPortNext = parseInt("1" + lconfig.lockerPort, 10);
 console.log('lservicemanager lockerPortNext = ' + lockerPortNext);
 
+exports.webServer = undefined;
+
 exports.serviceMap = function() {
     // XXX Sterilize?
     return serviceMap;
@@ -153,7 +155,6 @@ function mergedManifest(dir)
         return false;
     });
     if (serviceInfo && serviceInfo.manifest) {
-
         var fullInfo = JSON.parse(fs.readFileSync(path.join(lconfig.lockerDir, serviceInfo.manifest)));
         return lutil.extend(js, fullInfo);
     } else {
@@ -174,7 +175,7 @@ exports.findInstalled = function () {
             if(!fs.statSync(dir).isDirectory()) continue;
             if(!fs.statSync(dir+'/me.json').isFile()) continue;
             var js = mergedManifest(dir);
-            if (!js.synclets) {
+            if (!js.synclets && !js.require) {
                 delete js.pid;
                 delete js.starting;
                 js.externalUri = lconfig.externalBase+"/Me/"+js.id+"/";
@@ -188,13 +189,25 @@ exports.findInstalled = function () {
                     console.log("Loaded " + js.id);
                 }
             }
+            if (js.require) {
+                js.externalUri = lconfig.externalBase+"/Me/"+js.id+"/";
+                exports.load(js);
+                serviceMap.installed[js.id] = js;
+                if (js.disabled) {
+                    console.log("Disabled " + js.id);
+                    serviceMap.disabled.push(js.id);
+                } else {
+                    js = serviceMap.installed[js.id] = exports.migrate(dir, js);
+                    load(js);
+                }
+            }
         } catch (E) {
 //            console.log("Me/"+dirs[i]+" does not appear to be a service (" +E+ ")");
         }
     }
 }
 
-addEvents = function(info) {
+var addEvents = function(info) {
     if (info.events) {
         for (var i = 0; i < info.events.length; i++) {
             var ev = info.events[i];
@@ -469,6 +482,10 @@ exports.spawn = function(serviceId, callback) {
     svc.startingPid = app.pid;
 }
 
+exports.load = function(svcInfo) {
+    svcInfo.srcdir = path.join(lconfig.lockerDir, svcInfo.srcdir);
+    require(path.join(svcInfo.srcdir, svcInfo.require))(exports.webServer, svcInfo);
+}
 /**
 * Retrieve the meta information for a service
 */

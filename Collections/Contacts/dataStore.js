@@ -11,10 +11,12 @@ var collection;
 var db;
 var lconfig = require('../../Common/node/lconfig');
 var fs = require('fs');
+var id;
 
-exports.init = function(mongoCollection, mongo) {
+exports.init = function(mongoCollection, mongo, svcid) {
     collection = mongoCollection;
     db = mongo.dbClient;
+    id = svcid;
 }
 
 exports.getTotalCount = function(callback) {
@@ -36,9 +38,9 @@ function updateState()
     }
     writeTimer = setTimeout(function() {
         try {
-            fs.writeFileSync("state.json", JSON.stringify({updated:new Date().getTime()}));
+            fs.writeFileSync(path.join(lconfig.lockerDir, lconfig.me, svcid, "state.json"), JSON.stringify({updated:new Date().getTime()}));
         } catch (E) {}
-    }, 5000);    
+    }, 5000);
 }
 
 exports.addEvent = function(eventBody, callback) {

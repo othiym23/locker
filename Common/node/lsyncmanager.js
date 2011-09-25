@@ -7,6 +7,7 @@ var fs = require('fs')
   , lutil = require('lutil')
   , EventEmitter = require('events').EventEmitter
   , levents = require(__dirname + '/levents')
+  , locker = require(__dirname + '/locker')
   ;
 
 var synclets = {

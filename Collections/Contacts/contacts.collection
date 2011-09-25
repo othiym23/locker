@@ -1,16 +1,16 @@
 {
     "title":"Contacts Collection",
     "desc":"A collection of contacts from many places.",
-    "run":"node contacts.js",
+    "require":"contacts.js",
     "status":"stable",
     "handle":"contacts",
     "provides":["contact"],
     "mongoCollections": ["contacts"],
-    "events":[["contact/foursquare", "/events"],
-        ["contact/facebook", "/events"],
-        ["contact/twitter", "/events"],
-        ["contact/github", "/events"],
-        ["contact/tumblr", "/events"],
-        ["contact/gcontacts", "/events"],
-        ["contact/flickr", "/events"]]
+    "events":["contact/foursquare",
+        "contact/facebook",
+        "contact/twitter",
+        "contact/github",
+        "contact/tumblr",
+        "contact/gcontacts",
+        "contact/flickr"]
 }

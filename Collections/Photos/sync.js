@@ -12,14 +12,11 @@ var locker = require('../../Common/node/locker.js');
 var lconfig = require('../../Common/node/lconfig.js');
 var dataStore = require('./dataStore');
 var lockerUrl;
-var EventEmitter = require('events').EventEmitter;
 var logger = require("../../Common/node/logger.js").logger;
 
-exports.init = function(theLockerUrl, mongoCollection, mongo) {
+exports.init = function(mongoCollection, mongo, svcid) {
     logger.debug("Photos sync init mongoCollection(" + mongoCollection + ")");
-    lockerUrl = theLockerUrl;
-    dataStore.init(mongoCollection, mongo);
-    exports.eventEmitter = new EventEmitter();
+    dataStore.init(mongoCollection, mongo, svcid);
 }
 
 var photoGatherers = {

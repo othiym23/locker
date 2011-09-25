@@ -55,6 +55,8 @@ var locker = express.createServer(
             connect.session({key:'locker.project.id', secret : "locker"})
         );
 
+serviceManager.webServer = locker;
+
 var synclets = require('./webservice-synclets')(locker);
 var syncletAuth = require('./webservice-synclets-auth')(locker);
 
@@ -258,19 +260,17 @@ locker.post('/core/:svcId/enable', function(req, res) {
 
 // ME PROXY
 // all of the requests to something installed (proxy them, moar future-safe)
-locker.get('/Me/*', function(req,res){
-    proxyRequest('GET', req, res);
+locker.all('/Me/*', function(req, res, next) {
+    // express doens't seem to have any way to insert routes higher in the route chain, so
+    // if another route has been added to handle this request, defer to it
+    if (locker.match[req.method.toLowerCase()](req.url).length > 1) { return next(); }
+    proxyRequest(req, res);
 });
 
-// all of the requests to something installed (proxy them, moar future-safe)
-locker.post('/Me/*', function(req,res){
-    proxyRequest('POST', req, res);
-});
-
-function proxyRequest(method, req, res) {
+function proxyRequest(req, res) {
     var slashIndex = req.url.indexOf("/", 4);
     if (slashIndex < 0) slashIndex = req.url.length;
-    var id = req.url.substring(4, slashIndex);
+    var id = req.url.substring(4, slashIndex).toLowerCase();
     var ppath = req.url.substring(slashIndex);
     if (syncManager.isInstalled(id)) {
         return res.redirect(path.join('synclets', id, ppath));
@@ -297,10 +297,10 @@ function proxyRequest(method, req, res) {
         console.log("Having to spawn " + id);
         var buffer = proxy.buffer(req);
         serviceManager.spawn(id,function(){
-            proxied(method, serviceManager.metaInfo(id),ppath,req,res,buffer);
+            proxied(req.method, serviceManager.metaInfo(id),ppath,req,res,buffer);
         });
     } else {
-        proxied(method, serviceManager.metaInfo(id),ppath,req,res);
+        proxied(req.method, serviceManager.metaInfo(id),ppath,req,res);
     }
     console.log("Proxy complete");
 };

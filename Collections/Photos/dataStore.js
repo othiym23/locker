@@ -17,6 +17,7 @@ var crypto = require("crypto");
 var async = require("async");
 var url = require("url");
 var fs = require('fs');
+var id;
 
 function processTwitPic(svcId, data, cb) {
     if (!data.id) {
@@ -152,7 +153,7 @@ function updateState()
     }
     writeTimer = setTimeout(function() {
         try {
-            fs.writeFileSync("state.json", JSON.stringify({updated:new Date().getTime()}));
+            fs.writeFile(path.join(lconfig.lockerDir, lconfig.me, id, "state.json"), JSON.stringify({updated:new Date().getTime()}));
         } catch (E) {}
     }, 5000);
 }
@@ -194,11 +195,11 @@ dataHandlers["photo/twitpic"] = processTwitPic;
 dataHandlers["photo/facebook"] = processFacebook;
 dataHandlers["photo/flickr"] = processFlickr;
 
-exports.init = function(mongoCollection, mongo) {
+exports.init = function(mongoCollection, mongo, svcid) {
     logger.debug("dataStore init mongoCollection(" + mongoCollection + ")");
     collection = mongoCollection;
     db = mongo.dbClient;
-    lconfig.load('../../Config/config.json'); // ugh
+    var id = svcid;
 }
 
 exports.getTotalCount = function(callback) {

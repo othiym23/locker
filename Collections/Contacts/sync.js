@@ -11,28 +11,23 @@ var request = require('request');
 var locker = require('../../Common/node/locker.js');
 var lconfig = require('../../Common/node/lconfig.js');
 var dataStore = require('./dataStore');
-var lockerUrl;
-var EventEmitter = require('events').EventEmitter;
+var events = locker.events;
 
-exports.init = function(theLockerUrl, mongoCollection, mongo) {
-    lockerUrl = theLockerUrl;
-    dataStore.init(mongoCollection, mongo);
-    exports.eventEmitter = new EventEmitter();
+exports.init = function(mongoCollection, mongo, id) {
+    dataStore.init(mongoCollection, mongo, id);
 }
 
 exports.gatherContacts = function(cb) {
-    lconfig.load('../../Config/config.json');
     dataStore.clear(function(err) {
         // now that we've deleted them, we need to tell search to whack ours too before we start
         request.get({uri:lconfig.lockerBase + '/Me/search/reindexForType?type=contact/full'}, function(){
             cb(); // synchro delete, async/background reindex
             // This should really be timered, triggered, something else
-            locker.providers(['contact/facebook', 'contact/twitter', 'contact/flickr', 
-                              'contact/gcontacts', 'contact/foursquare', 
+            locker.providers(['contact/facebook', 'contact/twitter', 'contact/flickr',
+                              'contact/gcontacts', 'contact/foursquare',
                               'contact/github'], function(err, services) {
                 if (!services) return;
                 services.forEach(function(svc) {
-                    console.log("svc", svc.id, svc.provides);
                     if(svc.provides.indexOf('contact/facebook') >= 0) {
                         exports.getContacts("facebook", "contact", svc.id, function() {
                             console.error('facebook done!');
@@ -59,7 +54,7 @@ exports.gatherContacts = function(cb) {
                         })
                     }
                 });
-            });            
+            });
         });
     });
 }
@@ -83,7 +78,7 @@ function addContacts(type, endpoint, contacts, callback) {
             // var eventObj = {source: req.body.obj.via, type:req.body.obj.type, data:doc};
             if (doc._id) {
                 var eventObj = {source: "contacts", type:endpoint, data:doc};
-                exports.eventEmitter.emit('contact/full', eventObj);
+                events.emit('contact/full', eventObj);
             }
             addContacts(type, endpoint, contacts, callback);
         })
