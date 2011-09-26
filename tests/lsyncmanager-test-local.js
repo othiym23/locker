@@ -58,13 +58,19 @@ vows.describe("Synclet Manager").addBatch({
     },
     "Installed services" : {
         "are found" : {
-            topic:syncManager.findInstalled(),
+            topic:function() {
+                syncManager.scanDirectory("Connectors");
+                syncManager.findInstalled();
+                return 0;
+            },
             "and testSynclet exists": function() {
                 assert.include(syncManager.synclets().installed, "testSynclet");
                 assert.isTrue(syncManager.isInstalled("testSynclet"));
             },
             "and has status" : {
-                topic: syncManager.status('testSynclet'),
+                topic: function() {
+                    return syncManager.status('testSynclet');
+                },
                 "frequency is 120s" : function(topic) {
                     assert.equal(topic.synclets[0].frequency, 360000);
                 },
@@ -94,11 +100,11 @@ vows.describe("Synclet Manager").addBatch({
     // this will all be handled by the auth manager later, but this will have to do for now
     //
     "Installed services have hacky auth pieces added to them" : {
-        topic: syncManager.synclets().available,
+        topic: function() { return syncManager.synclets().available; },
         "facebook worked" : function(topic) {
             for (var i = 0; i < topic.length; i++) {
                 if (topic[i].provider === 'facebook') {
-                    assert.equal(topic[i].authurl, "https://graph.facebook.com/oauth/authorize?client_id=fb-appkey&response_type=code&redirect_uri=http://localhost:8043/auth/facebook/auth&scope=email,offline_access,read_stream,user_photos,friends_photos,publish_stream,user_photo_video_tags");
+                    assert.equal(topic[i].authurl, "https://graph.facebook.com/oauth/authorize?client_id=fb-appkey&response_type=code&redirect_uri=http://localhost:8043/auth/facebook/auth&scope=email,offline_access,read_stream,user_photos,friends_photos,user_photo_video_tags");
                 }
             }
         },
@@ -132,6 +138,7 @@ vows.describe("Synclet Manager").addBatch({
         },
         "flickr worked" : function(topic) {
             for (var i = 0; i < topic.length; i++) {
+                console.dir(topic[i]);
                 if (topic[i].provider === 'flickr') {
                     assert.equal(topic[i].authurl, "http://localhost:8043/auth/flickr/auth");
                 }
