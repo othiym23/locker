@@ -3,12 +3,13 @@ var util = require('./util');
 var async = require('async');
 var logger = require(__dirname + "/../../Common/node/logger").logger;
 var lutil = require('lutil');
+var lconfig = require(__dirname + "/../../Common/node/locker");
 
-var dataStore, locker;
+var dataStore, id;
 // internally we need these for happy fun stuff
-exports.init = function(l, dStore){
+exports.init = function(dStore, svcid){
     dataStore = dStore;
-    locker = l;
+    id = svcid;
 }
 
 // manually walk and reindex all possible link sources
@@ -20,22 +21,22 @@ exports.reIndex = function(locker,cb) {
             services.forEach(function(svc) {
                 if(svc.provides.indexOf('checkin/foursquare') >= 0) {
                     // lots of naming confusion, try them all
-                    getCurrently(do4sq, true, locker.lockerBase + '/Me/' + svc.id + '/getCurrent/places', function(){});
-                    getCurrently(do4sq, false, locker.lockerBase + '/Me/' + svc.id + '/getCurrent/recent', function(){});
-                    getCurrently(do4sq, false, locker.lockerBase + '/Me/' + svc.id + '/getCurrent/recents', function(){});
-                    getCurrently(do4sq, true, locker.lockerBase + '/Me/' + svc.id + '/getCurrent/checkins', function(){});
-                    getCurrently(do4sq, true, locker.lockerBase + '/Me/' + svc.id + '/getCurrent/checkin', function(){});
+                    getCurrently(do4sq, true, lconfig.lockerBase + '/Me/' + svc.id + '/getCurrent/places', function(){});
+                    getCurrently(do4sq, false, lconfig.lockerBase + '/Me/' + svc.id + '/getCurrent/recent', function(){});
+                    getCurrently(do4sq, false, lconfig.lockerBase + '/Me/' + svc.id + '/getCurrent/recents', function(){});
+                    getCurrently(do4sq, true, lconfig.lockerBase + '/Me/' + svc.id + '/getCurrent/checkins', function(){});
+                    getCurrently(do4sq, true, lconfig.lockerBase + '/Me/' + svc.id + '/getCurrent/checkin', function(){});
                 } else if(svc.provides.indexOf('status/twitter') >= 0) {
-                    getCurrently(doTwitter, false, locker.lockerBase + '/Me/' + svc.id + '/getCurrent/home_timeline', function() {
-                        getCurrently(doTwitter, false, locker.lockerBase + '/Me/' + svc.id + '/getCurrent/timeline', function() {
-                            getCurrently(doTwitter, true, locker.lockerBase + '/Me/' + svc.id + '/getCurrent/tweets', function() {
+                    getCurrently(doTwitter, false, lconfig.lockerBase + '/Me/' + svc.id + '/getCurrent/home_timeline', function() {
+                        getCurrently(doTwitter, false, lconfig.lockerBase + '/Me/' + svc.id + '/getCurrent/timeline', function() {
+                            getCurrently(doTwitter, true, lconfig.lockerBase + '/Me/' + svc.id + '/getCurrent/tweets', function() {
                                 console.error('twitter done!');
                             });
                         });
                     });
                 }
             });
-        });        
+        });
     });
 
 }
@@ -46,7 +47,7 @@ logger.debug("fetching "+lurl);
     request.get({uri:lurl}, function(err, resp, body) {
         var arr;
         try{
-            arr = JSON.parse(body);            
+            arr = JSON.parse(body);
         }catch(E){
             return callback();
         }
@@ -77,13 +78,13 @@ exports.processEvent = function(event, callback)
 
 
 // placeholder to do more generic place processing
-function processPlace(e, cb) 
+function processPlace(e, cb)
 {
     if(!e) return cb();
     dataStore.addPlace(e,cb);
 }
 
-// hack to inspect until we find any [123,456] 
+// hack to inspect until we find any [123,456]
 function firstLL(o,reversed)
 {
     if(Array.isArray(o) && o.length == 2 && typeof o[0] == 'number' && typeof o[1] == 'number') {

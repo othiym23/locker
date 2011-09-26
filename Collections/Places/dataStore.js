@@ -7,11 +7,13 @@
 *
 */
 var logger = require(__dirname + "/../../Common/node/logger").logger;
+var id;
 
 // in the future we'll probably need a visitCollection too
 var placeCollection;
 
-exports.init = function(pCollection) {
+exports.init = function(pCollection, _id) {
+    id = _id;
     placeCollection = pCollection;
 }
 
@@ -73,5 +75,3 @@ exports.addPlace = function(place, callback) {
         callback(err, doc);
     });
 }
-
-    

@@ -12,108 +12,87 @@
 var fs = require('fs'),
     url = require('url'),
     request = require('request'),
-    locker = require('../../Common/node/locker.js');
+    locker = require(__dirname + '/../../Common/node/locker.js');
+var events = locker.events;
 var async = require("async");
-    
+var lmongo = require(__dirname + '/../../Common/node/lmongo');
+var path = require('path');
 var dataIn = require('./dataIn'); // for processing incoming twitter/facebook/etc data types
 var dataStore = require("./dataStore"); // storage/retreival of raw places
 var util = require("./util"); // handy things for anyone and used within place processing
 
 var lockerInfo;
-var express = require('express'),
-    connect = require('connect');
-var app = express.createServer(connect.bodyParser());
+var express = require('express');
 
-app.set('views', __dirname);
+module.exports = function(app, svcInfo) {
 
-app.get('/', function(req, res) {
-    res.writeHead(200, {
-        'Content-Type': 'text/html'
-    });
-    dataStore.getTotalPlaces(function(err, countInfo) {
-        res.write('<html><p>Found '+ countInfo +' places</p></html>');
-        res.end();
-    });
-});
+    var prefix = path.join("/Me/", svcInfo.id);
 
-app.get('/state', function(req, res) {
-    dataStore.getTotalPlaces(function(err, countInfo) {
-        if(err) return res.send(err, 500);
-        var updated = new Date().getTime();
-        try {
-            var js = JSON.parse(fs.readFileSync('state.json'));
-            if(js && js.updated) updated = js.updated;
-        } catch(E) {}
-        res.send({ready:1, count:countInfo, updated:updated});
-    });
-});
-
-
-app.get('/update', function(req, res) {
-    dataIn.reIndex(locker,function(){
-        res.writeHead(200);
-        res.end('Making cookies for temas!');        
-    });
-});
-
-app.post('/events', function(req, res) {
-    if (!req.body.type || !req.body.obj){
-        console.log('5 HUNDO bad data:',JSON.stringify(req.body));
-        res.writeHead(500);
-        res.end('bad data');
-        return;
-    }
-
-    // handle asyncadilly
-    dataIn.processEvent(req.body);
-    res.writeHead(200);
-    res.end('ok');
-});
-
-function genericApi(name,f)
-{
-    app.get(name,function(req,res){
-        var results = [];
-        f(req.query,function(item){results.push(item);},function(err){
-            if(err)
-            {
-                res.writeHead(500, {'Content-Type': 'text/plain'});
-                res.end(err);
-            }else{
-                res.writeHead(200, {'Content-Type': 'application/json'});
-                res.end(JSON.stringify(results));
-            }
+    app.get(prefix + '/', function(req, res) {
+        res.writeHead(200, {
+            'Content-Type': 'text/html'
         });
-    });   
-}
-
-
-genericApi('/getPlaces', dataStore.getPlaces);
-// expose all utils
-for(var f in util)
-{
-    if(f == 'init') continue;
-    genericApi('/'+f,util[f]);
-}
-
-// Process the startup JSON object
-process.stdin.resume();
-process.stdin.on('data', function(data) {
-    lockerInfo = JSON.parse(data);
-    locker.initClient(lockerInfo);
-    locker.lockerBase = lockerInfo.lockerUrl;
-    if (!lockerInfo || !lockerInfo['workingDirectory']) {
-        process.stderr.write('Was not passed valid startup information.'+data+'\n');
-        process.exit(1);
-    }
-    process.chdir(lockerInfo.workingDirectory);
-    
-    locker.connectToMongo(function(mongo) {
-        // initialize all our libs
-        dataStore.init(mongo.collections.place);
-        dataIn.init(locker, dataStore);
-        app.listen(lockerInfo.port, 'localhost', function() {
-            process.stdout.write(data);
+        dataStore.getTotalPlaces(function(err, countInfo) {
+            res.write('<html><p>Found '+ countInfo +' places</p></html>');
+            res.end();
         });
     });
-});
+
+    app.get(prefix + '/state', function(req, res) {
+        dataStore.getTotalPlaces(function(err, countInfo) {
+            if(err) return res.send(err, 500);
+            var updated = new Date().getTime();
+            fs.readFile(path.join(lconfig.lockerDir, lconfig.me, svcInfo.id, 'state.json'), function(err, js) {
+                if (err) { return res.send({ready:1, count:countInfo, updated:updated}); }
+                js = JSON.parse(js);
+                if(js && js.updated) updated = js.updated;
+                res.send({ready:1, count:countInfo, updated:updated});
+            });
+        });
+    });
+
+
+    app.get(prefix + '/update', function(req, res) {
+        dataIn.reIndex(locker,function(){
+            res.writeHead(200);
+            res.end('Making cookies for temas!');
+        });
+    });
+
+    for (var i = 0; i < svcInfo.events.length; i++) {
+        events.on(svcInfo.events[i], function(eventObj) {
+            dataIn.processEvent(eventObj);
+        });
+    }
+
+    function genericApi(name,f)
+    {
+        app.get(prefix + name,function(req,res){
+            var results = [];
+            f(req.query,function(item){results.push(item);},function(err){
+                if(err)
+                {
+                    res.writeHead(500, {'Content-Type': 'text/plain'});
+                    res.end(err);
+                }else{
+                    res.writeHead(200, {'Content-Type': 'application/json'});
+                    res.end(JSON.stringify(results));
+                }
+            });
+        });
+    }
+
+
+    genericApi('/getPlaces', dataStore.getPlaces);
+    // expose all utils
+    for(var f in util)
+    {
+        if(f == 'init') continue;
+        genericApi('/'+f,util[f]);
+    }
+
+    lmongo.init('places', svcInfo.mongoCollections, function(mongo) {
+        dataStore.init(mongo.collections.places.place, svcInfo.id);
+        dataIn.init(dataStore, svcInfo.id);
+    });
+}
