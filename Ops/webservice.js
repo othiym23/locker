@@ -57,6 +57,15 @@ var locker = express.createServer(
 
 locker.register('.html', require('ejs'));
 
+locker.configure('development', function(){
+  locker.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+});
+
+locker.configure('production', function(){
+  locker.use(express.errorHandler());
+});
+
+
 serviceManager.webServer = locker;
 
 var synclets = require('./webservice-synclets')(locker);

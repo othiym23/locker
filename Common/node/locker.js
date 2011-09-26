@@ -13,7 +13,8 @@ var request = require('request'),
     http = require("http"),
     url = require("url"),
     lstate = require("lstate"),
-    querystring = require("querystring");
+    querystring = require("querystring"),
+    lconfig = require('./lconfig');
 
 var lmongoclient;
 
@@ -23,7 +24,7 @@ var baseServiceUrl;
 
 var EventEmitter = require('events').EventEmitter;
 
-exports.lockerBase = lockerBase;
+exports.lockerBase = lockerBase = lconfig.lockerBase;
 exports.events = new EventEmitter();
 exports.events.setMaxListeners(0);
 

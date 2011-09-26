@@ -3,7 +3,7 @@
 	"action":"search locker",
 	"desc":"Search your locker!",
 	"status":"unstable",
-	"run":"node app.js",
+	"require":"app.js",
 	"uses":["facebook", "twitter", "foursquare", "gcontacts", "github"],
 	"autoInstall":true,
     "handle":"searchapp"
