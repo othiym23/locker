@@ -7,16 +7,20 @@
 *
 */
 var logger = require(__dirname + "/../../Common/node/logger").logger;
+var lconfig = require(__dirname + "/../../Common/node/lconfig");
+var id;
+var path = require('path');
 var fs = require('fs');
 
 // in the future we'll probably need a visitCollection too
 var linkCollection, encounterCollection, queueCollection;
 
-exports.init = function(lCollection, eCollection, qCollection) {
+exports.init = function(lCollection, eCollection, qCollection, svcid) {
     linkCollection = lCollection;
     linkCollection.ensureIndex({"link":1},{unique:true},function() {});
     encounterCollection = eCollection;
     queueCollection = qCollection;
+    id = svcid;
 }
 
 exports.clear = function(callback) {
@@ -100,9 +104,9 @@ function updateState()
     }
     writeTimer = setTimeout(function() {
         try {
-            fs.writeFileSync("state.json", JSON.stringify({updated:new Date().getTime()}));
+            fs.writeFile(path.join(lconfig.lockerDir, lconfig.me, id, 'state.json'), JSON.stringify({updated:new Date().getTime()}));
         } catch (E) {}
-    }, 5000);    
+    }, 5000);
 }
 
 // insert new (fully normalized) link, ignore or replace if it already exists?

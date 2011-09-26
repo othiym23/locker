@@ -130,10 +130,13 @@ module.exports = function(app, svcInfo) {
             try {
                 last = JSON.parse(fs.readFileSync('state.json'));
             } catch(err) {
+                last = {};
             }
             for(var type in eventInfo) {
                 // stupd vrbos
-                if(eventInfo[type].count > last[type].count) io.sockets.emit('event',{"name":eventInfo[type].name, "updated":eventInfo[type].updated, "new":eventInfo[type].count - last[type].count});
+                if (last[type]) {
+                    if(eventInfo[type].count > last[type].count) io.sockets.emit('event',{"name":eventInfo[type].name, "updated":eventInfo[type].updated, "new":eventInfo[type].count - last[type].count});
+                }
             }
             saveState(); // now that we possibly pushed events, note it
             events.on("photo", processEvent);

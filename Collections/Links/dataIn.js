@@ -4,17 +4,19 @@ var async = require('async');
 var wrench = require('wrench');
 var logger = require(__dirname + "/../../Common/node/logger").logger;
 var lutil = require('lutil');
+var levents = require(__dirname + "/../../Common/node/levents");
+var locker = require(__dirname + "/../../Common/node/locker");
 
-var dataStore, locker, search;
+var dataStore, locker, search, id;
 // internally we need these for happy fun stuff
-exports.init = function(l, dStore, s){
+exports.init = function(dStore, s, svcid){
     dataStore = dStore;
-    locker = l;
     search = s;
+    id = svcid;
 }
 
 // manually walk and reindex all possible link sources
-exports.reIndex = function(locker,cb) {
+exports.reIndex = function(cb) {
     search.resetIndex();
     dataStore.clear(function(){
         cb(); // synchro delete, async/background reindex
@@ -150,7 +152,7 @@ function linkMagic(origUrl, callback){
                           delete link.html; // don't want that stored
                           if (!link.at) link.at = Date.now();
                           dataStore.addLink(link,function(){
-                              locker.event("link",link); // let happen independently
+                              levents.fireEvent('link', id, 'new', link);
                               callback(link.link); // TODO: handle when it didn't get stored or is empty better, if even needed
                           });
                       });

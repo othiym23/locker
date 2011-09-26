@@ -5,6 +5,8 @@ var fs = require('fs');
 var async = require("async");
 var logger = require(__dirname + "/../../Common/node/logger").logger;
 var wrench = require("wrench");
+var lconfig = require(__dirname + "/../../Common/node/lconfig");
+var path = require('path');
 
 // constants, graciously lifted from lsearch
 var EStore = {
@@ -21,17 +23,17 @@ var EIndex = {
 };
 
 var indexPath, dataStore;
-// tracks the dStore and makes sure index dir exists 
-exports.init = function(dStore)
+// tracks the dStore and makes sure index dir exists
+exports.init = function(dStore, id)
 {
     dataStore = dStore;
-    indexPath = process.cwd() + "/links.index";
+    indexPath = path.join(lconfig.lockerDir, lconfig.me, id, "links.index");
     if (!path.existsSync(indexPath)) {
       fs.mkdirSync(indexPath, 0755);
     };
 }
 
-exports.resetIndex = function() 
+exports.resetIndex = function()
 {
     try {
         wrench.rmdirSyncRecursive(indexPath);
@@ -93,7 +95,7 @@ var indexQueue = async.queue(function(task, callback) {
         console.log("Added " + task.url);
         callback(err);
     });
-    
+
     /*
     ndx(task.url, task.at, task.txt, function(err, indexTime, docsReplacedCount) {
         console.log("index queue callback");
@@ -113,5 +115,5 @@ function ndx(id,at,txt,cb)
         console.log("NDX DONE");
         cb(err, indexTime);
     });
-}    
+}
 
