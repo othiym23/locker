@@ -81,18 +81,22 @@ module.exports = function(app, svcInfo) {
 
     function processEvent(event) {
         if(isSomeoneListening == 0) return; // ignore if nobody is around, shouldn't be getting any anyway
-        var evInfo = eventInfo[event.type];
-        evInfo.new++;
-        if (evInfo.timer) {
-            clearTimeout(evInfo.timer);
+        try {
+            var evInfo = eventInfo[event.type];
+            evInfo.new++;
+            if (evInfo.timer) {
+                clearTimeout(evInfo.timer);
+            }
+            evInfo.timer = setTimeout(function() {
+                evInfo.count += evInfo.new;
+                evInfo.updated = new Date().getTime();
+                io.sockets.emit('event',{"name":evInfo.name, "new":evInfo.new, "count":evInfo.count, "updated":evInfo.updated});
+                evInfo.new = 0;
+                saveState();
+            }, 2000);
+        } catch (E) {
+            console.error(E);
         }
-        evInfo.timer = setTimeout(function() {
-            evInfo.count += evInfo.new;
-            evInfo.updated = new Date().getTime();
-            io.sockets.emit('event',{"name":evInfo.name, "new":evInfo.new, "count":evInfo.count, "updated":evInfo.updated});
-            evInfo.new = 0;
-            saveState();
-        }, 2000);
     }
 
     // just snapshot to disk every time we push an event so we can compare in the future

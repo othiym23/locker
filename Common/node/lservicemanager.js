@@ -307,7 +307,9 @@ exports.install = function(metaData, installOverride) {
     serviceMap.installed[meInfo.id] = mergedManifest(path.join(lconfig.me, meInfo.id));
 
     var fullInfo = exports.metaInfo(meInfo.id);
-    addEvents(fullInfo);
+    if (!fullInfo.require) {
+        addEvents(fullInfo);
+    }
     fullInfo.externalUri = lconfig.externalBase+"/Me/"+meInfo.id+"/";
     return fullInfo;
 }

@@ -105,6 +105,8 @@ exports.event = function(type, obj, action) {
  * listen("photo/flickr", "/photoListener");
  */
 exports.listen = function(type, callbackEndpoint, callbackFunction) {
+    console.log(type);
+    console.log(callbackEndpoint);
     request.get({url:baseServiceUrl + '/listen?' + querystring.stringify({'type':type, 'cb':callbackEndpoint})},
     function(error, response, body) {
         if(error) sys.debug(error);
