@@ -34,7 +34,7 @@ $(document).ready(
         $('#service-closer').click(function() {
             userClosed = true;
             $('#appFrame').animate({height: $('#appFrame').height() + 110}, {duration: 200, queue: false});
-            $('#services').animate({height: "0px"}, {duration: 200, queue: false, complete:function() { 
+            $('#services').animate({height: "0px"}, {duration: 200, queue: false, complete:function() {
                     $('.services-box-container').show();
                     resizeFrame();
                 }

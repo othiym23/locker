@@ -2,6 +2,6 @@
     "title":"User UI",
     "desc":"Use what's there",
     "status":"stable",
-    "run":"node dashboard.js",
+    "require":"dashboard-client.js",
     "handle":"useui"
 }

@@ -257,6 +257,15 @@ locker.post('/core/:svcId/enable', function(req, res) {
     });
 });
 
+locker.all('/dashboard*', function(req, res, next) {
+    req.url = path.join('/Me/', dashboard.instance.id, req.url.substring(10));
+    next();
+});
+
+locker.all('/devdashboard*', function(req, res, next) {
+    req.url = path.join('/Me/', serviceManager.metaInfo('devdashboard').id, req.url.substring(13));
+    next();
+});
 
 // ME PROXY
 // all of the requests to something installed (proxy them, moar future-safe)
@@ -297,10 +306,10 @@ function proxyRequest(req, res, next) {
         console.log("Having to spawn " + id);
         var buffer = proxy.buffer(req);
         serviceManager.spawn(id,function(){
-            proxied(req.method, serviceManager.metaInfo(id),ppath,req,res,buffer);
+            proxied(req.method, serviceManager.metaInfo(id),ppath,req,res, next, buffer);
         });
     } else {
-        proxied(req.method, serviceManager.metaInfo(id),ppath,req,res);
+        proxied(req.method, serviceManager.metaInfo(id),ppath,req,res, next);
     }
     console.log("Proxy complete");
 };
@@ -428,35 +437,14 @@ locker.post('/core/:svcId/event', function(req, res) {
 
 locker.use(express.static(__dirname + '/static'));
 
-// fallback everything to the dashboard
-locker.all('/dashboard*', function(req, res) {
-    proxied(req.method, dashboard.instance,req.url.substring(11),req,res);
-});
-
-locker.all('/devdashboard*', function(req, res) {
-    proxied(req.method, serviceManager.metaInfo('devdashboard'), req.url.substring(14), req, res);
-});
-
-locker.all("/socket.io*", function(req, res) {
-    if (dashboard && dashboard.instance) proxied(req.method, dashboard.instance, req.url, req, res);
-});
-// proxy websockets
-locker.on('upgrade', function(req, socket, head) {
-    // TODO be selective about who they're routing too?
-    console.log("*************");
-    console.log("********** websocket proxying to dashboard");
-    console.log("*************");
-  proxy.proxyWebSocketRequest(req, socket, head, {
-      host: url.parse(dashboard.instance.uriLocal).hostname,
-      port: url.parse(dashboard.instance.uriLocal).port,
-  });
-});
-
 locker.get('/', function(req, res) {
     res.redirect(lconfig.externalBase + '/dashboard/');
 });
 
-function proxied(method, svc, ppath, req, res, buffer) {
+function proxied(method, svc, ppath, req, res, next, buffer) {
+    if (serviceManager.isInprocess(svc.id)) {
+       return res.redirect(path.join('/Me/', dashboard.instance.id, ppath));
+    }
     if(ppath.substr(0,1) != "/") ppath = "/"+ppath;
     console.log("proxying " + method + " " + req.url + " to "+ svc.uriLocal + ppath);
     req.url = ppath;
@@ -473,12 +461,8 @@ exports.startService = function(port, cb) {
         console.error('you have specified an invalid UI in your config file.  please fix it!');
         process.exit();
     }
-    if(!serviceManager.isInstalled(lconfig.ui))
-        serviceManager.install(serviceManager.getFromAvailable(lconfig.ui));
-    serviceManager.spawn(lconfig.ui, function() {
-        dashboard = {instance: serviceManager.metaInfo(lconfig.ui)};
-        console.log('ui spawned');
-    });
+    if(!serviceManager.isInstalled(lconfig.ui)) serviceManager.install(serviceManager.getFromAvailable(lconfig.ui));
+    dashboard = {instance: serviceManager.metaInfo(lconfig.ui)};
     serviceManager.spawn('devdashboard', function() {
         devdashboard = {instance: serviceManager.metaInfo('devdashboard')};
     });
