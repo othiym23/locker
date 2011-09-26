@@ -47,6 +47,27 @@ exports.providers = function(types) {
     return services;
 }
 
+function mergedManifest(dir) 
+{
+    // Don't use metainfo here because we aren't fully setup
+    var js = JSON.parse(fs.readFileSync(path.join(dir, 'me.json'), 'utf-8'));
+    var serviceInfo = {};
+    synclets.available.some(function(svcInfo) {
+        if (svcInfo.srcdir == js.srcdir) {
+            for(var a in svcInfo){serviceInfo[a]=svcInfo[a];}
+            return true;
+        }
+        return false;
+    });
+    if (serviceInfo && serviceInfo.manifest) {
+        var fullInfo = JSON.parse(fs.readFileSync(path.join(lconfig.lockerDir, serviceInfo.manifest)));
+        return lutil.extend(fullInfo, js);
+    } else {
+        console.log("SYnclet " + js.id + " is alone");
+        return js;
+    }
+}
+
 /**
 * Scans the Me directory for installed synclets
 */
@@ -89,7 +110,7 @@ function mergeManifest(js)
     });
     if (serviceInfo && serviceInfo.manifest) {
         var fullInfo = JSON.parse(fs.readFileSync(serviceInfo.manifest));
-        return lutil.extend(js, fullInfo);
+        return lutil.extend(fullInfo, js);
     } else {
         return js;
     }
@@ -129,27 +150,28 @@ exports.install = function(metaData) {
     });
     if (!serviceInfo) return serviceInfo;
 
+    var meInfo = {};
     // local/internal name for the service on disk and whatnot, try to make it more friendly to devs/debugging
     if(serviceInfo.provider) {
         var inc = 0;
         if (path.existsSync(path.join(lconfig.lockerDir, lconfig.me, serviceInfo.provider))) {
             inc++;
             while (path.existsSync(path.join(lconfig.lockerDir, lconfig.me, serviceInfo.provider + '-' + inc))) inc++;
-            serviceInfo.id = serviceInfo.provider + "-" + inc;
+            meInfo.id = serviceInfo.provider + "-" + inc;
         } else {
-            serviceInfo.id = serviceInfo.provider;
+            meInfo.id = serviceInfo.provider;
         }
     } else {
         throw "invalid synclet, has no provider";
     }
-    synclets.installed[serviceInfo.id] = serviceInfo;
-    serviceInfo.version = Date.now();
-    fs.mkdirSync(path.join(lconfig.lockerDir, lconfig.me, serviceInfo.id),0755);
-    fs.writeFileSync(path.join(lconfig.lockerDir, lconfig.me, serviceInfo.id, 'me.json'),JSON.stringify(serviceInfo, null, 4));
+    synclets.installed[meInfo.id] = meInfo;
+    meInfo.version = Date.now();
+    fs.mkdirSync(path.join(lconfig.lockerDir, lconfig.me, meInfo.id),0755);
+    fs.writeFileSync(path.join(lconfig.lockerDir, lconfig.me, meInfo.id, 'me.json'),JSON.stringify(meInfo, null, 4));
     for (var i = 0; i < serviceInfo.synclets.length; i++) {
         scheduleRun(serviceInfo, serviceInfo.synclets[i]);
     }
-    return serviceInfo;
+    return mergedManifest(path.join(lconfig.me, meInfo.id));
 }
 
 exports.isInstalled = function(serviceId) {
