@@ -55,6 +55,8 @@ var locker = express.createServer(
             connect.session({key:'locker.project.id', secret : "locker"})
         );
 
+locker.register('.html', require('ejs'));
+
 serviceManager.webServer = locker;
 
 var synclets = require('./webservice-synclets')(locker);
@@ -463,9 +465,7 @@ exports.startService = function(port, cb) {
     }
     if(!serviceManager.isInstalled(lconfig.ui)) serviceManager.install(serviceManager.getFromAvailable(lconfig.ui));
     dashboard = {instance: serviceManager.metaInfo(lconfig.ui)};
-    serviceManager.spawn('devdashboard', function() {
-        devdashboard = {instance: serviceManager.metaInfo('devdashboard')};
-    });
+    devdashboard = {instance: serviceManager.metaInfo('devdashboard')};
     locker.listen(port, function() {
         cb();
     });

@@ -18,77 +18,88 @@ var fs = require('fs'),
     express = require('express'),
     connect = require('connect'),
     http = require('http'),
-    request = require('request');
-    
+    request = require('request'),
+    lconfig = require(__dirname + "/../../Common/node/lconfig"),
+    path = require('path'),
+    syncmanager = require(__dirname + '/../../Common/node/lsyncmanager'),
+    serviceManager = require(__dirname + "/../../Common/node/lservicemanager"),
+    locker = require(__dirname + "/../../Common/node/locker");
 
-var map;
 
-var rootHost;
-var lockerPort;
-var rootPort;
-var externalBase;
-var lockerBase;
-var lockerRoot;
+var map = serviceManager.serviceMap();
+var synclets = syncmanager.synclets();
 
-module.exports = function(passedLockerHost, passedLockerPort, passedPort, passedExternalBase) {
-    rootHost = passedLockerHost;
-    lockerPort = passedLockerPort;
-    rootPort = passedPort;
-    externalBase = passedExternalBase;
-    lockerBase = 'http://' + rootHost + ':' + lockerPort + '/core/dashboard';
-    lockerRoot = 'http://'+rootHost+':'+lockerPort;
-    
-    app.use(express.static(__dirname + '/static'));
+module.exports = function(app, svcInfo) {
+    var prefix = path.join('/Me/', svcInfo.id);
 
-    app.listen(rootPort);
+    app.use(prefix, express.static(__dirname + '/static'));
+    app.use(prefix, connect.bodyParser());
+
+    app.get(prefix + '/', function (req, res) {
+        var file = __dirname + "/static/wizard/index.html";
+        if (synclets.installed) file = path.join(__dirname, "dashboard.html");
+        res.render(file);
+    });
+
+    app.get(prefix + '/dashboard', function (req, res) {
+        res.render('dashboard.html');
+    });
+
+    app.get(prefix + '/config.js', function (req, res) {
+        res.writeHead(200, { 'Content-Type': 'text/javascript','Access-Control-Allow-Origin' : '*' });
+        //this might be a potential script injection attack, just sayin.
+        var config = {lockerHost:lconfig.lockerHost,
+                      lockerPort:lconfig.lockerPort,
+                      lockerBase:lconfig.lockerBase,
+                      externalBase:lconfig.externalBase};
+        res.end('lconfig = ' + JSON.stringify(config) + ';');
+    });
+
+    app.get(prefix + '/install', function(req, res){
+        ensureMap(function() {
+            install(req, res);
+        });
+    });
+
+    app.get(prefix + '/uninstall', function(req, res) {
+        stopService('uninstall', req, res);
+    });
+
+    app.get(prefix + '/enable', function(req, res){
+        stopService('enable', req, res);
+    });
+
+
+    app.get(prefix + '/disable', function(req, res){
+        stopService('disable', req, res);
+    });
 }
 
 
-var app = express.createServer();
-app.use(connect.bodyParser());
-
-var synclets;
-app.get('/', function (req, res) {
-    res.writeHead(200, { 'Content-Type': 'text/html','Access-Control-Allow-Origin' : '*' });
-    request.get({uri:lockerRoot + '/synclets'}, function(err, resp, body) {
-        synclets = JSON.parse(body);
-        var connectorCount = 0; // should replace with collection count
-        var path = __dirname + "/static/wizard/index.html";
-                   
-        for (app in synclets.installed) {
-            path = __dirname + "/dashboard.html";
+function stopService(method, req, res) {
+    var serviceId = req.query.serviceId;
+    request.post({uri:lconfig.lockerBase + '/' + method, json:{serviceId:serviceId}}, function(err, resp, body) {
+        if(err) {
+            res.writeHead(500, {'Content-Type': 'application/json'});
+            console.error(method + ' err', err);
+            res.end(JSON.stringify({error:true}));
+        } else {
+            res.writeHead(200, {'Content-Type': 'application/json'});
+            res.end(JSON.stringify({success:true}));
         }
-        
-        console.error('DEBUG: path', path);
-        fs.readFile(path, function(err, data) {
-            res.write(data, "binary");
-            res.end();
-        });
     });
-});
+}
 
-app.get('/dashboard', function (req, res) {
-    res.writeHead(200, { 'Content-Type': 'text/html','Access-Control-Allow-Origin' : '*' });
-    request.get({uri:lockerRoot + '/map'}, function(err, resp, body) {
-        map = JSON.parse(body);
-        var path = "dashboard.html";
-        fs.readFile(path, function(err, data) {
-            res.write(data, "binary");
-            res.end();
+function ensureMap(callback) {
+    if (!map || !map.available) {
+        request.get({uri:lconfig.lockerRoot + '/map'}, function(err, resp, body) {
+            map = JSON.parse(body);
+            callback();
         });
-    });
-});
-
-app.get('/config.js', function (req, res) {
-    res.writeHead(200, { 'Content-Type': 'text/javascript','Access-Control-Allow-Origin' : '*' });
-    //this might be a potential script injection attack, just sayin.
-    var config = {lockerHost:rootHost,
-                  lockerPort:rootPort,
-                  lockerBase:lockerRoot,
-                  externalBase:externalBase};
-    res.end('lconfig = ' + JSON.stringify(config) + ';');
-});
-
+    } else {
+        process.nextTick(callback);
+    }
+}
 // doesn't this exist somewhere? was easier to write than find out, meh!
 function intersect(a,b) {
     if(!a || !b) return false;
@@ -97,19 +108,12 @@ function intersect(a,b) {
             if(a[i] == b[j]) return a[i];
     return false;
 }
-
-app.get('/install', function(req, res){
-    ensureMap(function() {
-        install(req, res);
-    });
-});
-
 function install(req, res) {
     var id = req.param('id');
     var handle = req.param('handle');
     console.log(id);
     console.log(handle);
-    var httpClient = http.createClient(lockerPort);
+    var httpClient = http.createClient(lconfig.lockerPort);
     var request = httpClient.request('POST', '/core/Dashboard/install', {'Content-Type':'application/json'});
     console.log("hi");
     if (id) var item = JSON.stringify(map.available[req.param('id')]);
@@ -139,43 +143,3 @@ function install(req, res) {
         });
     });
 }
-
-app.get('/uninstall', function(req, res) {
-    stopService('uninstall', req, res);
-});
-
-app.get('/enable', function(req, res){
-    stopService('enable', req, res);
-});
-
-
-app.get('/disable', function(req, res){
-    stopService('disable', req, res);
-});
-
-function stopService(method, req, res) {
-    var serviceId = req.query.serviceId;
-    request.post({uri:lockerBase + '/' + method, json:{serviceId:serviceId}}, function(err, resp, body) {
-        if(err) {
-            res.writeHead(500, {'Content-Type': 'application/json'});
-            console.error(method + ' err', err);
-            res.end(JSON.stringify({error:true}));
-        } else {
-            res.writeHead(200, {'Content-Type': 'application/json'});
-            res.end(JSON.stringify({success:true}));
-        }
-    });
-}
-
-function ensureMap(callback) {
-    if (!map || !map.available) {
-        request.get({uri:lockerRoot + '/map'}, function(err, resp, body) {
-            map = JSON.parse(body);
-            callback();
-        });
-    } else {
-        process.nextTick(callback);
-    }
-}
-
-
