@@ -24,6 +24,9 @@ var request = require('request');
 var async = require('async');
 var app = express.createServer(connect.bodyParser());
 
+var maxCloseTimeout = null;
+var MAX_CLOSE_TIMEOUT = 10000;
+
 app.set('views', __dirname);
 
 app.get('/', function(req, res) {
@@ -131,6 +134,10 @@ exports.handlePostEvents = function(req, callback) {
                     return callback(err, {});
                 }
                 handleLog(req.body.type, req.body.action, req.body.obj.data._id, time);
+                if (maxCloseTimeout) clearTimeout(maxCloseTimeout);
+                maxCloseTimeout = setTimeout(function() {
+                    lsearch.flushAndCloseWriter();
+                }, MAX_CLOSE_TIMEOUT);
                 return callback(err, {timeToIndex: time});
             });
         } else if (req.body.action === 'delete') {

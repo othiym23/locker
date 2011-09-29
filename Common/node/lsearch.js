@@ -35,6 +35,8 @@ NullEngine.prototype.queryType = function(type, q, params, cb) {
 NullEngine.prototype.name = function() {
     return "Null engine";
 };
+NullEngine.prototype.flushAndCloseWriter = function() {
+};
 
 CLEngine = function()
 {
@@ -190,14 +192,19 @@ CLEngine.prototype.deleteDocumentsByType = function(type, callback) {
 };
 CLEngine.prototype.queryType = function(type, query, params, callback) {
     assert.ok(indexPath);
+    this.lucene.flushAndCloseWriter();
     this.lucene.search(indexPath, "content:(" + query + ") AND +_type:" + type, callback);
 };
 CLEngine.prototype.queryAll = function(query, params, callback) {
     assert.ok(indexPath);
+    this.lucene.flushAndCloseWriter();
     this.lucene.search(indexPath, "content:(" + query + ")", callback);
 };
 CLEngine.prototype.name = function() {
     return "CLEngine";
+};
+CLEngine.prototype.flushAndCloseWriter = function() {
+    this.lucene.closeWriter();
 };
 
 
@@ -233,6 +240,7 @@ function exportEngineFunction(funcName) {
 }
 exportEngineFunction("queryType");
 exportEngineFunction("queryAll");
+exportEngineFunction("flushAndCloseWriter");
 
 // Indexing Parts Be Here
 var indexQueue = [];
