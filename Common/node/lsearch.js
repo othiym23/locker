@@ -290,6 +290,8 @@ function indexMore(keepGoing) {
     exports.currentEngine.indexType(cur.type, cur.source, cur.value, function(err, indexTime) {
         //console.log('Indexed ' + cur.type + ' id: ' + cur.value._id + ' in ' + indexTime + ' ms');
         cur.cb(err, indexTime);
+        delete cur;
+        cur = null;
         //console.log("Setting up for next tick");
         // TODO: review for optimization per ctide comment (per 100 instead of per 1?)
         process.nextTick(function() { indexMore(true); });
