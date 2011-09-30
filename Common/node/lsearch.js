@@ -175,7 +175,7 @@ CLEngine.prototype.indexType = function(type, source, value, callback) {
     if (source !== null) {
         doc.addField("_source", source, this.engine.Store.STORE_YES|this.engine.Index.INDEX_UNTOKENIZED);
     }
-    doc.addField('content', contentString, this.engine.Store.STORE_YES|this.engine.Index.INDEX_TOKENIZED);
+    doc.addField('content', contentString, this.engine.Store.STORE_NO|this.engine.Index.INDEX_TOKENIZED);
     //console.log('about to index at ' + indexPath);
     assert.ok(indexPath);
     this.lucene.addDocument(idToStore, doc, indexPath, function(err, indexTime) {
@@ -284,7 +284,7 @@ function indexMore(keepGoing) {
         indexing = false;
         return;
     }
-    
+    console.log(indexQueue.length);
     var cur = indexQueue.shift();
     assert.ok(exports.currentEngine);
     exports.currentEngine.indexType(cur.type, cur.source, cur.value, function(err, indexTime) {

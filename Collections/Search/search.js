@@ -266,7 +266,7 @@ exports.handleGetReindexForType = function(type, callback) {
 };
 
 function reindexType(url, type, source, callback) {
-    request.get({uri:url}, function(err, res, body) {
+    var reqObj = request.get({uri:url}, function(err, res, body) {
         if (err) {
             console.error('Error when attempting to reindex ' + type + ' collection: ' + err);
             return callback(err);
@@ -277,7 +277,7 @@ function reindexType(url, type, source, callback) {
             return callback(err);
         }
 
-        items = JSON.parse(body);
+        var items = JSON.parse(body);
         async.forEachSeries(items, function(item, forEachCb) {
             var fullBody = {};
             fullBody.type = type;
@@ -287,8 +287,12 @@ function reindexType(url, type, source, callback) {
             req.body = fullBody;
             req.headers = {};
             req.headers['content-type'] = 'application/json';
-            exports.handlePostIndex(req, forEachCb);
+            exports.handlePostIndex(req, function() { 
+                req = null;
+                forEachCb.call();
+            });
         },function(err) {
+            reqObj = null;
             if (err) {
                 console.error(err);
                 return callback(err);
