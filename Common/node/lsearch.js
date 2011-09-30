@@ -192,12 +192,12 @@ CLEngine.prototype.deleteDocumentsByType = function(type, callback) {
 };
 CLEngine.prototype.queryType = function(type, query, params, callback) {
     assert.ok(indexPath);
-    this.lucene.flushAndCloseWriter();
+    this.flushAndCloseWriter();
     this.lucene.search(indexPath, "content:(" + query + ") AND +_type:" + type, callback);
 };
 CLEngine.prototype.queryAll = function(query, params, callback) {
     assert.ok(indexPath);
-    this.lucene.flushAndCloseWriter();
+    this.flushAndCloseWriter();
     this.lucene.search(indexPath, "content:(" + query + ")", callback);
 };
 CLEngine.prototype.name = function() {
