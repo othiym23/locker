@@ -329,14 +329,26 @@ function proxyRequest(method, req, res) {
         console.log("auto-installing "+id);
         serviceManager.install(match); // magically auto-install!
     }
-    if (!serviceManager.isRunning(id)) {
-        console.log("Having to spawn " + id);
-        var buffer = httpProxy.buffer(req);
-        serviceManager.spawn(id,function(){
-            proxied(method, serviceManager.metaInfo(id),ppath,req,res,buffer);
+    if (serviceManager.metaInfo(id).static === true || serviceManager.metaInfo(id).static === "true") {
+        // This is a static file we'll try and serve it directly
+        var fileUrl = url.parse(ppath);
+        res.sendfile(path.join(serviceManager.metaInfo(id).srcdir, "static", fileUrl.pathname), function(error) {
+            if (error) {
+                res.send(404);
+                return;
+            }
         });
+        console.log("Sent static file " + path.join(serviceManager.metaInfo(id).srcdir, "static", ppath));
     } else {
-        proxied(method, serviceManager.metaInfo(id),ppath,req,res);
+        if (!serviceManager.isRunning(id)) {
+            console.log("Having to spawn " + id);
+            var buffer = httpProxy.buffer(req);
+            serviceManager.spawn(id,function(){
+                proxied(method, serviceManager.metaInfo(id),ppath,req,res,buffer);
+            });
+        } else {
+            proxied(method, serviceManager.metaInfo(id),ppath,req,res);
+        }
     }
     console.log("Proxy complete");
 };
