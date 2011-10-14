@@ -332,10 +332,19 @@ function proxyRequest(method, req, res) {
     if (serviceManager.metaInfo(id).static === true || serviceManager.metaInfo(id).static === "true") {
         // This is a static file we'll try and serve it directly
         var fileUrl = url.parse(ppath);
-        res.sendfile(path.join(serviceManager.metaInfo(id).srcdir, "static", fileUrl.pathname), function(error) {
+        if(fileUrl.pathname.indexOf("..") >= 0)
+        { // extra sanity check
+            return res.send(404);
+        }
+        res.sendfile(path.join(serviceManager.metaInfo(id).srcdir, fileUrl.pathname), function(error) {
             if (error) {
-                res.send(404);
-                return;
+                // legacy things lived in static dir, should be removed at some point once they're all cleaned up!
+                res.sendfile(path.join(serviceManager.metaInfo(id).srcdir, "static", fileUrl.pathname), function(error) {
+                    if (error) {
+                        res.send(404);
+                        return;
+                    }
+                });
             }
         });
         console.log("Sent static file " + path.join(serviceManager.metaInfo(id).srcdir, "static", ppath));
