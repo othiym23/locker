@@ -1,6 +1,17 @@
 /* Generic log function for debugging. */
 var log = function(msg) { if (console && console.log) console.debug(msg); }
 
+function initialize() {
+    var latlng = new google.maps.LatLng(-34.397, 150.644);
+    var myOptions = {
+      zoom: 8,
+      center: latlng,
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+    var map = new google.maps.Map(document.getElementById("map_canvas"),
+        myOptions);
+}
+
 /**
  * Reload the display (get places, render them)
  * @property offset {Integer} Optional Where in the places collection you want to start.
@@ -53,5 +64,5 @@ function reload(offset, limit, useJSON) {
 
 /* jQuery syntactic sugar for onDomReady */
 $(function() {
-    reload(0, 100, true);
+    //reload(0, 100, true);
 });
