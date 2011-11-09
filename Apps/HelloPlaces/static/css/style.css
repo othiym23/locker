@@ -1,5 +1,18 @@
-/* Get stylin here */
+#mapcanvas {
+	border: 6px solid #ccc;
+	float: left;
+}
 
-html { height: 100% }
-body { height: 100%; margin: 0; padding: 0 }
-#map_canvas { height: 60% }
+#placeslist {
+	margin: 0px;
+	height: 100%;
+	border: 6px solid #ccc;
+	border-left: none;
+	overflow: auto;
+}
+
+#placeslist li {
+	list-style-image: none;
+	list-style-type: none;
+	padding: 20px 5px;
+}

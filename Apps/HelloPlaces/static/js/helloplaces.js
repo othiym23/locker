@@ -2,15 +2,30 @@
 var log = function(msg) { if (console && console.log) console.debug(msg); }
 
 function initialize() {
-    var latlng = new google.maps.LatLng(-34.397, 150.644);
     var myOptions = {
-      zoom: 8,
-      center: latlng,
-      mapTypeId: google.maps.MapTypeId.ROADMAP
+        zoom: 12,
+        center: new google.maps.LatLng(37.759, -122.410),
+        mapTypeId: google.maps.MapTypeId.ROADMAP
     };
-    var map = new google.maps.Map(document.getElementById("map_canvas"),
-        myOptions);
+
+    var map = new google.maps.Map(document.getElementById('mapcanvas'), myOptions);
+    
+    var marker = new google.maps.Marker({
+          position: new google.maps.LatLng(37.759, -122.410), 
+          map: map,
+          animation: google.maps.Animation.DROP,
+          title:"Singly HQ"
+      });
 }
+
+function loadScript() {
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'http://maps.googleapis.com/maps/api/js?sensor=false&callback=initialize';
+    document.body.appendChild(script);
+}
+
+window.onload = loadScript;
 
 /**
  * Reload the display (get places, render them)
@@ -18,6 +33,7 @@ function initialize() {
  * @property limit {Integer} Optional The number of places you want returned.
  * @property useJSON {Boolean} Optional Display raw JSON instead of the place's name.
  */
+/*
 function reload(offset, limit, useJSON) {
     // set the params if not specified
     var offset = offset || 0;
@@ -60,7 +76,8 @@ function reload(offset, limit, useJSON) {
   {'offset':offset, 'limit':limit},
   getPlacesCB
     );
-}
+}*/
+
 
 /* jQuery syntactic sugar for onDomReady */
 $(function() {
