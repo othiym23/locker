@@ -24,13 +24,6 @@ function loadPlaceslist(offset, limit) {
     var useJSON = useJSON || false;
 
     var getPlacesCB = function(places) {
-        places = places.sort(function(lh, rh) {
-            var rhc = parseInt(rh.timestamp);
-            var lhc = parseInt(lh.timestamp);
-            if (rhc > (Date.now() / 1000)) rhc = rhc / 1000;
-            if (lhc > (Date.now() / 1000)) lhc = lhc / 1000;
-            return rhc - lhc;
-        });
         // find the unordered list in our document to append to
         var $placeslist = $("#placeslist");
         $placeslist.html('');
@@ -38,24 +31,25 @@ function loadPlaceslist(offset, limit) {
         if (places.length === 0) $placeslist.append("<li>Sorry, no places found!</li>");
         for (var i in places) {
             place = places[i];
-            $placeslist.append('<li class="place"><a class="placelink" href="#" data-id="' + place._id + '" data-me="' + place.me + '" data-network="' + place.network + '" data-stream="' + place.stream + '" data-lat="' + place.lat + '" data-lng="' + place.lng + '" data-title="' + place.title + '"><div class="filler"><img class="network" src="/Me/useui/img/icons/' + place.network + '.png" /><div class="title">' + place.title + '</div><div class="date">' + moment(place.at).format('h:mma') + ' on ' + moment(place.at).format('M/D/YYYY') + '</div></div></a></li>');
+            $placeslist.append('<li class="place"><a class="placelink" href="#" data-id="' + place._id + '" data-me="' + place.me + '" data-network="' + place.network + '" data-stream="' + place.stream + '" data-lat="' + place.lat + '" data-lng="' + place.lng + '" data-title="' + place.title + '"><div class="filler"><img class="network" src="/Me/useui/img/icons/' + place.network + '.png" /><div class="title">' + place.from + ' @ ' + place.title + '</div><div class="date">' + moment(place.at).format('h:mma') + ' on ' + moment(place.at).format('M/D/YYYY') + '</div></div></a></li>');
         }
     };
 
     $.getJSON(
         '/Me/places',
-        {'offset':offset, 'limit':limit},
+        {'offset':offset, 'limit':limit, 'sort': 'at', 'order': -1},
         getPlacesCB
     );
 }
 
-function addMarker(lat, lng, title) {
+function addMarker(lat, lng, title, network) {
     markers.push(new google.maps.Marker({
         position: new google.maps.LatLng(lat, lng), 
         map: map,
         draggable: false,
         animation: google.maps.Animation.DROP,
-        title:title
+        title:title,
+        icon: '/Me/helloplaces/static/img/' + network + '-marker.png'
     }));
 }
 
@@ -78,14 +72,14 @@ function loadScript() {
 
 
 $(function() {
-    loadPlaceslist(0, 100);
+    loadPlaceslist(0, 1000); // get infinite scroll working here
     
     $(".placelink").live('click', function(e) {
         e.preventDefault();
         clearOverlays();
         var lat = $(this).attr('data-lat');
         var lng = $(this).attr('data-lng');
-        addMarker(lat, lng, $(this).attr('data-title'));
-        map.setCenter(new google.maps.LatLng(lat, lng));
+        addMarker(lat, lng, $(this).attr('data-title'), $(this).attr('data-network'));
+        map.panTo(new google.maps.LatLng(lat, lng));
     });
 });

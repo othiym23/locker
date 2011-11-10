@@ -36,17 +36,25 @@ function processFoursquare(svcId, type, data, cb) {
             id:data.id,
             me:me,
             network:"foursquare",
-            stream: false,
+            path: false,
+            title: (data.venue) ? data.venue.name : data.location.name,
+            from: '',
             lat: loc.lat,
             lng: loc.lng,
             at: data.createdAt * 1000,
             via: '/Me/' + svcId + '/' + type.split('/')[0] + '/id/'+data._id
         };
-    placeInfo.title = (data.venue) ? data.venue.name : data.location.name;
+        
     // "checkins" are from yourself, kinda problematic to deal with here?
     if (data.user) {
         placeInfo.fromID = data.user.id;
-        placeInfo.from = data.user.firstName + " " + data.user.lastName;
+        placeInfo.from = '';
+        if (data !== null && data.hasOwnProperty('user') && data.user.hasOwnProperty('firstName')) {
+            placeInfo.from += data.user.firstName.replace(/^\w/, function($0) { return $0.toUpperCase(); });
+        }
+        if (data !== null && data.hasOwnProperty('user') && data.user.hasOwnProperty('lastName')) {
+            placeInfo.from += ' ' + data.user.lastName.replace(/^\w/, function($0) { return $0.toUpperCase(); });
+        }
     }
     saveCommonPlace(placeInfo, cb);
 }
@@ -57,7 +65,12 @@ function processTwitter(svcId, type, data, cb) {
         cb("The Twitter data did not have created_at");
         return;
     }
-
+    
+    var title = '';
+    if (data !== null && data.hasOwnProperty('place') && data.place !== null && data.place.hasOwnProperty('full_name')) {
+        title = data.place.full_name.replace(/\n/g,'').replace(/\s+/g, ' ').replace(/^\w/, function($0) { return $0.toUpperCase(); });
+    }
+    
     var ll = firstLL(data.geo);
     if (!ll) {
         ll = firstLL(data.place, true);
@@ -81,10 +94,11 @@ function processTwitter(svcId, type, data, cb) {
             me:me,
             lat: ll[0],
             lng: ll[1],
-            stream: false,
+            path: false,
+            title: title,
             network:"twitter",
             text: data.text,
-            from: (data.user)?data.user.name:"",
+            from: (data.user)?data.user.name.replace(/^\w/, function($0) { return $0.toUpperCase(); }):"",
             fromID: (data.user)?data.user.id:"",
             at: new Date(data.created_at).getTime(),
             via: '/Me/' + svcId + '/' + type.split('/')[0] + '/id/'+data._id
@@ -114,7 +128,8 @@ function processGLatitude(svcId, type, data, cb) {
             id:data.timestampMs,
             me:me,
             network:"glatitude",
-            stream: true,
+            path: true,
+            title: '',
             lat: data.latitude,
             lng: data.longitude,
             at: timestamp,
