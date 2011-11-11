@@ -35,7 +35,7 @@ function loadPlaceslist(offset, limit) {
                 // places collection adds two records for your checkin, in checkins and in recents.  This filters out the former.
                 continue;
             }
-            $placeslist.append('<li class="place"><a class="placelink" href="#" data-id="' + place._id + '" data-me="' + place.me + '" data-network="' + place.network + '" data-path="' + place.path + '" data-lat="' + place.lat + '" data-lng="' + place.lng + '" data-title="' + place.title + '"><div class="filler"><img class="network" src="/Me/useui/img/icons/' + place.network + '.png" /><div class="title">' + place.from + ' @ ' + place.title + '</div><div class="date">' + moment(place.at).format('h:mma') + ' on ' + moment(place.at).format('M/D/YYYY') + '</div></div></a></li>');
+            $placeslist.append('<li class="place"><a class="placelink" href="#" data-id="' + place._id + '" data-me="' + place.me + '" data-network="' + place.network + '" data-path="' + place.path + '" data-lat="' + place.lat + '" data-lng="' + place.lng + '" data-title="' + place.title + '"><div class="filler"><img class="network" src="/Me/helloplaces/static/img/' + place.network + '.png" /><div class="title">' + place.from + ' @ ' + place.title + '</div><div class="date">' + moment(place.at).format('h:mma') + ' on ' + moment(place.at).format('M/D/YYYY') + '</div></div></a></li>');
         }
     };
 

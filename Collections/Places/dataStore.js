@@ -132,6 +132,7 @@ function processGLatitude(svcId, type, data, cb) {
             network:"glatitude",
             path: true,
             title: '',
+            from: 'Me',
             lat: data.latitude,
             lng: data.longitude,
             at: timestamp,
