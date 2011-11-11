@@ -42,7 +42,7 @@ function processFoursquare(svcId, type, data, cb) {
             lat: loc.lat,
             lng: loc.lng,
             at: data.createdAt * 1000,
-            via: '/Me/' + svcId + '/' + type.split('/')[0] + '/id/'+data._id
+            via: '/Me/' + svcId + '/' + type.split('/')[0] + '/id/' + data._id
         };
         
     // "checkins" are from yourself, kinda problematic to deal with here?
@@ -55,6 +55,8 @@ function processFoursquare(svcId, type, data, cb) {
         if (data !== null && data.hasOwnProperty('user') && data.user.hasOwnProperty('lastName')) {
             placeInfo.from += ' ' + data.user.lastName.replace(/^\w/, function($0) { return $0.toUpperCase(); });
         }
+    } else if (!data.user && me === true) {
+        placeInfo.from = 'Me';
     }
     saveCommonPlace(placeInfo, cb);
 }
@@ -272,7 +274,7 @@ function findWrap(a,b,c,cbEach,cbDone) {
 }
 
 // hack to inspect until we find any [123,456]
-function firstLL(o,reversed) {
+function firstLL(o, reversed) {
     if (Array.isArray(o) && o.length == 2 &&
         typeof o[0] == 'number' && typeof o[1] == 'number') {
         return (reversed) ? [o[1],o[0]] : o; // reverse them optionally
@@ -281,7 +283,7 @@ function firstLL(o,reversed) {
         return null;
     }
     for (var i in o) {
-        var ret = firstLL(o[i]);
+        var ret = firstLL(o[i], reversed);
         if(ret) return ret;
     }
     return null;

@@ -31,7 +31,11 @@ function loadPlaceslist(offset, limit) {
         if (places.length === 0) $placeslist.append("<li>Sorry, no places found!</li>");
         for (var i in places) {
             place = places[i];
-            $placeslist.append('<li class="place"><a class="placelink" href="#" data-id="' + place._id + '" data-me="' + place.me + '" data-network="' + place.network + '" data-stream="' + place.stream + '" data-lat="' + place.lat + '" data-lng="' + place.lng + '" data-title="' + place.title + '"><div class="filler"><img class="network" src="/Me/useui/img/icons/' + place.network + '.png" /><div class="title">' + place.from + ' @ ' + place.title + '</div><div class="date">' + moment(place.at).format('h:mma') + ' on ' + moment(place.at).format('M/D/YYYY') + '</div></div></a></li>');
+            if (place.network === 'foursquare' && place.from === 'Me') {
+                // places collection adds two records for your checkin, in checkins and in recents.  This filters out the former.
+                continue;
+            }
+            $placeslist.append('<li class="place"><a class="placelink" href="#" data-id="' + place._id + '" data-me="' + place.me + '" data-network="' + place.network + '" data-path="' + place.path + '" data-lat="' + place.lat + '" data-lng="' + place.lng + '" data-title="' + place.title + '"><div class="filler"><img class="network" src="/Me/useui/img/icons/' + place.network + '.png" /><div class="title">' + place.from + ' @ ' + place.title + '</div><div class="date">' + moment(place.at).format('h:mma') + ' on ' + moment(place.at).format('M/D/YYYY') + '</div></div></a></li>');
         }
     };
 
@@ -43,14 +47,19 @@ function loadPlaceslist(offset, limit) {
 }
 
 function addMarker(lat, lng, title, network) {
-    markers.push(new google.maps.Marker({
-        position: new google.maps.LatLng(lat, lng), 
-        map: map,
-        draggable: false,
-        animation: google.maps.Animation.DROP,
-        title:title,
-        icon: '/Me/helloplaces/static/img/' + network + '-marker.png'
-    }));
+    var markerObj = {
+                    position: new google.maps.LatLng(lat, lng), 
+                    map: map,
+                    draggable: false,
+                    animation: google.maps.Animation.DROP,
+                    title:title
+                 };
+    if (network !== undefined) {
+     markerObj.icon = '/Me/helloplaces/static/img/' + network + '-marker.png';
+    }
+    
+    var marker = new google.maps.Marker(markerObj);
+    markers.push(marker);
 }
 
 function clearOverlays() {
@@ -66,7 +75,7 @@ function clearOverlays() {
 function loadScript() {
     var script = document.createElement('script');
     script.type = 'text/javascript';
-    script.src = 'http://maps.googleapis.com/maps/api/js?sensor=false&callback=initializeMap';
+    script.src = 'https://maps.googleapis.com/maps/api/js?sensor=false&callback=initializeMap';
     document.body.appendChild(script);
 }
 
@@ -81,5 +90,7 @@ $(function() {
         var lng = $(this).attr('data-lng');
         addMarker(lat, lng, $(this).attr('data-title'), $(this).attr('data-network'));
         map.panTo(new google.maps.LatLng(lat, lng));
+        console.log(lat);
+        console.log(lng);
     });
 });
