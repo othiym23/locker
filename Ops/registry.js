@@ -56,8 +56,10 @@ exports.init = function(serman, syncman, config, crypto, callback) {
                 }catch(E){
                     logger.error("couldn't parse registry.json: "+E);
                 }
-                syncTimer = setInterval(exports.sync, syncInterval);
-                exports.sync();
+                if(lconfig.registryUpdate === true) {
+                    syncTimer = setInterval(exports.sync, syncInterval);
+                    exports.sync();
+                }
                 process.chdir(lconfig.lockerDir);
                 callback(installed);
             });
@@ -74,8 +76,11 @@ exports.app = function(app)
     app.get('/registry/add/:id', function(req, res) {
         logger.info("registry trying to add "+req.params.id);
         if(!regIndex[req.params.id]) return res.send("not found", 404);
-        if(!verify(regIndex[req.params.id])) return res.send("invalid app", 500);
-        exports.install({name:req.params.id}, function(){ res.send(true); });
+        if(!verify(regIndex[req.params.id])) return res.send("invalid package", 500);
+        exports.install({name:req.params.id}, function(err){
+            if(err) return res.send(err, 500);
+            res.send(true);
+        });
     });
     app.get('/registry/apps', function(req, res) {
         res.send(exports.getApps());
@@ -185,8 +190,9 @@ function verify(pkg)
 {
     if(!pkg) return false;
     if(!pkg.repository) return false;
-    if(!pkg.repository.static) return false;
-    if(pkg.repository.static === true || pkg.repository.static === "true") return true;
+    if(pkg.repository.type == 'app') return true;
+    if(pkg.repository.type == 'connector') return true;
+    if(pkg.repository.type == 'collection') return true;
     return false;
 }
 
@@ -217,7 +223,7 @@ function loadPackage(name, upsert, callback)
             return callback(E);
         }
         // during install/update tell serviceManager about this as well
-        if(upsert) serviceManager.mapUpsert(path.join('Me/node_modules',name,'package.json'));
+        if(upsert) serviceManager.mapUpsert(path.join(lconfig.me,'node_modules',name,'package.json'));
         callback(null, installed[name]);
     });
 }
@@ -281,8 +287,10 @@ exports.getMyApps = function(req, res) {
         if (gh && gh.login) {
             Object.keys(regIndex).forEach(function(k){
                 var thiz = regIndex[k];
-                if(thiz.repository && thiz.repository.type === 'app' && thiz.name && thiz.name.indexOf('app-' + gh.login + '-') === 0)
+                if(thiz.repository && thiz.repository.type === 'app' && thiz.name && thiz.name.indexOf('app-' + gh.login + '-') === 0) {
+                    console.dir(thiz);
                     apps[k] = thiz;
+                }
             });
         }
         res.send(apps);
@@ -368,10 +376,10 @@ function checkPackage(pjs, arg, gh, callback)
               "repository": {
                 "title": arg.title || pkg,
                 "handle": handle,
-                "is": "app",
+                "type": "app",
                 "author": gh.login,
-                "static": "true",
-                "update": "auto",
+                "static": true,
+                "update": true,
                 "github": "https://github.com/"+gh.login+"/"+pkg
               },
               "dependencies": {},
