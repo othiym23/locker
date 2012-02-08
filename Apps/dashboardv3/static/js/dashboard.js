@@ -1,10 +1,9 @@
 var defaultApp = 'contactsviewer';
 var specialApps = {
-    "connect" : "connect",
     "allApps"  : "allApps",
     "connect"  : "connect",
-    "develop"  : "develop",
-    "settings" : "settings"
+    "develop"  : "develop"
+//    "settings" : "settings-panels"
 };
 var defaultSubSections = {};
 var loggedIn = true;
@@ -24,6 +23,11 @@ $(document).ready(function() {
   });
 
   $('body').delegate('.oauthLink','click', Locker.connectService);
+
+  $('body').delegate('.iframeLink', 'click', function (e) {
+    loadDiv($(this).data('id'));
+    return false;
+  });
 
   $('.your-apps').click(function() {
     $('.blue').removeClass('blue');
@@ -63,17 +67,17 @@ var loadApp = function(info) {
   $('.app-details').hide();
   if (specialApps[app]) {
     $("#appFrame")[0].contentWindow.location.replace(specialApps[app] + '?params=' + info.params);
-  } else if (info.topSection === "Settings") {
+  } /*else if (info.topSection === "Settings") {
     if (info.subSection === "Connections") {
-      $("#appFrame")[0].contentWindow.location.replace('/Dashboard/settings-connectors');
+      $("#appFrame")[0].contentWindow.location.replace('/Dashboard/settings-panels');
     } else if (info.subSection === "AccountInformation") {
-      $("#appFrame")[0].contentWindow.location.replace('/Dashboard/settings-account');
+      $("#appFrame")[0].contentWindow.location.replace('/Dashboard/settings-panels');
     } else if (info.subSection === "APIKey") {
-      $("#appFrame")[0].contentWindow.location.replace('/Dashboard/settings-api');
+      $("#appFrame")[0].contentWindow.location.replace('/Dashboard/settings-panels');
     } else {
       alert("CAN YOOOOO SMELL WHAT THE ROCK IS COOOKING?");
     }
-  } else if (app === "Publish") {
+  } */ else if (app === "Publish") {
     $("#appFrame")[0].contentWindow.location.replace('publish?app=' + info.params.app);
     $('#appHeader').hide();
   } else if (info.topSection === "Develop") {

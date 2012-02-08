@@ -116,6 +116,22 @@ var renderSettings = function(req, res) {
     res.render('settings', {dashboard: lconfig.dashboard});
 };
 
+var renderSettingsPanels = function (req, res) {
+    getConnectors(function(err, connectors) {
+        var numInstalled = 0;
+        for (var i=0; i<connectors.length; i++) {
+            if (connectors[i].hasOwnProperty('authed')) {
+                numInstalled++;
+            }
+        }
+        res.render('settings-panels', {
+            layout: false,
+            numInstalled: numInstalled,
+            connectors: connectors
+        });
+    });
+};
+
 var renderSettingsConnectors = function(req, res) {
     getConnectors(function(err, connectors) {
         var numInstalled = 0;
@@ -550,17 +566,17 @@ var getSidebarData = function(callback) {
             getInstalledConnectors(function(err, result) {
                 parallelCb(err, result);
             });
-        }     
+        }
     },
     function(err, results) {
         return callback({
             installedApps: results.installedAppsData,
             myApps: results.myAppsData,
             connectors: results.connectorsData,
-            installedConnectors: results.installedConnectorsData 
+            installedConnectors: results.installedConnectorsData
         });
     });
-}
+};
 
 var getFilteredApps = function(filterFn, callback) {
     locker.mapType('app', function(err, map) {
@@ -604,6 +620,7 @@ app.get('/settings', renderSettings);
 app.get('/settings-connectors', renderSettingsConnectors);
 app.get('/settings-account', renderSettingsAccountInformation);
 app.get('/settings-api', renderSettingsAPIKey);
+app.get('/settings-panels', renderSettingsPanels);
 app.post('/settings-account', handleSettings);
 
 app.get('/allApps', renderApps);
